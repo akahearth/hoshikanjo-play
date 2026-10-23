@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#102b2b">
+  <meta name="description" content="勝ち星、いただきます。星と精霊の洒落が効いた、オフラインで遊べるターン制カードゲーム。">
+  <title>星勘定の決闘 | HOSHIKANJO</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="星勘定">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="js/cards.js"></script>
+  <script defer src="js/strategy.js"></script>
+  <script defer src="js/heroes.js"></script>
+  <script defer src="js/decks.js"></script>
+  <script defer src="js/arena.js"></script>
+  <script defer src="js/effects.js"></script>
+  <script defer src="js/engine.js"></script>
+  <script defer src="js/ai.js"></script>
+  <script defer src="js/art.js"></script>
+  <script defer src="js/traits.js"></script>
+  <script defer src="js/playback.js"></script>
+  <script defer src="js/review.js"></script>
+  <script defer src="js/power-effects.js"></script>
+  <script defer src="js/deck-editor.js"></script>
+  <script defer src="js/arena-editor.js"></script>
+  <script defer src="js/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="masthead">
+      <a class="brand" href="index.html" aria-label="星勘定の決闘 ホーム"><span class="brand-mark" aria-hidden="true">✧</span><span><span class="brand-title">星勘定の決闘</span><span class="brand-sub">HOSHIKANJO &nbsp; / &nbsp; CARD DUEL</span></span></a>
+      <div class="header-caption">勝ち星、いただきます。</div>
+      <nav aria-label="ゲームメニュー"><button class="text-button" id="watch-button">CPU同士を観戦</button><button class="text-button arena-entry" id="arena-button">✧ アリーナ</button><button class="text-button" id="cpu-settings-button">CPU設定</button><button class="text-button" id="deck-button">デッキ編集 <span>↗</span></button><button class="text-button" id="collection-button">カード一覧</button><button class="text-button" id="help-button"><span class="question-mark">?</span> 遊び方</button></nav>
+    </header>
+    <main class="game-layout">
+      <section class="arena" aria-label="対戦盤面">
+        <div class="arena-topline"><span class="live-label" id="duel-mode"><i></i> CPU DUEL</span><span>星降る森の、星取り横丁</span><span id="round-label">ROUND 01</span></div>
+        <div class="opponent-zone">
+          <div class="zone-info"><span class="eyebrow" id="cpu-order">OPPONENT</span><span class="zone-name" id="opponent-name">星よみ経理</span><span class="subtle" id="cpu-opponent-label">標準 · 均衡</span></div>
+          <div class="enemy-hand" id="enemy-hand" aria-label="CPUの手札"></div>
+          <div class="enemy-resources" id="cpu-resources"></div>
+        </div>
+        <button class="hero enemy-hero" id="enemy-hero" data-target="hero" aria-label="CPUのヒーローに攻撃"><span class="hero-aura"></span><span class="hero-portrait" id="enemy-portrait"></span><span class="hero-hp" id="cpu-hp">25</span><span class="hero-name" id="cpu-hero-name">星よみ経理</span></button>
+        <span id="cpu-weapon" class="equipped-weapon" hidden></span>
+        <div class="field enemy-field" id="enemy-field" role="group" aria-label="CPUのユニット"></div>
+        <div class="battle-divider"><span></span><div class="turn-banner" id="turn-banner">あなたのターン</div><span></span></div>
+        <div class="action-cue" id="action-cue" hidden aria-hidden="true"></div>
+        <div class="field player-field" id="player-field" role="group" aria-label="あなたのユニット"></div>
+        <div class="trait-legend" aria-label="能力の見分け方"><span>◎ 星護あり</span><span>⬡ 挑発</span><span>⇢ 速攻</span><span>⋮ 毒</span><span>◇ 死亡時</span><small>光輪が消えると星護消失</small></div>
+        <div class="player-bar">
+          <div class="player-identity"><button class="hero player-hero" id="player-hero" aria-label="自分のヒーロー"><span class="hero-portrait" id="player-portrait"></span><span class="hero-hp" id="player-hp">25</span></button><div><span class="eyebrow" id="player-order">YOU · 先攻</span><strong id="player-hero-name">森あげ役の旅人</strong></div></div>
+          <div class="mana-panel"><div class="mana-caption"><span>MANA</span><strong id="mana-text">1 <small>/ 1</small></strong></div><div class="mana-crystals" id="mana-crystals"></div></div>
+          <div class="player-deck" id="player-deck"></div>
+        </div>
+        <button id="weapon-attack" class="equipped-weapon" hidden aria-pressed="false"></button><div class="hero-power-bar"><button id="hero-power" aria-pressed="false"><span class="power-cost">2</span><span><strong id="power-name"></strong><small id="power-status"></small></span><span aria-hidden="true">✧</span></button><p id="power-description"></p></div>
+        <div class="hand-zone"><div class="hand-label"><span id="hand-owner">YOUR HAND</span><span id="hand-count">3 / 10</span></div><div class="hand" id="hand" role="group" aria-label="あなたの手札"></div></div>
+        <div class="arena-footer"><span><i class="ready-dot"></i> 光るカードは使用可能</span><button id="cancel-selection" class="text-button" hidden>選択解除 ×</button><span>ユニット・対象呪文を選択 → 光る対象をクリック</span></div>
+      </section>
+      <aside class="sidebar" aria-label="対戦情報">
+        <section class="match-panel"><span class="eyebrow">THE DUEL</span><h1>星を数えて、<br>手は抜かない。</h1><p>勝ち星の勘定は、精霊まかせ。<br>相手のHPを0にすれば勝利。</p><div class="match-meta"><span>使用デッキ</span><strong id="match-deck-name">星勘定はじめました</strong></div><button id="end-turn" class="end-turn">ターン終了 <span>→</span></button><div class="action-message" id="action-message" role="status" aria-live="polite"></div></section>
+        <section class="playback-panel" aria-label="対戦の進行設定">
+          <label for="playback-speed">進行速度</label>
+          <select id="playback-speed"><option value="study">じっくり（思考確認）</option><option value="slow">ゆっくり</option><option value="normal">標準</option><option value="fast">速め</option></select>
+          <button id="pause-cpu" class="text-button" disabled>CPUを一時停止</button>
+        </section>
+        <section class="thought-panel" id="live-thought-panel" hidden><p id="watch-match-info"></p><div class="panel-heading"><h2 id="live-thought-title">CPUの判断</h2></div><div id="live-thought"></div></section>
+        <section class="review-entry"><button class="editor-button" id="review-button" disabled>対戦を振り返る</button><button class="text-button" id="watch-exit" hidden>自分で対戦する</button></section>
+        <section class="event-panel" id="event-panel" aria-label="いまの行動" data-phase="idle">
+          <div class="panel-heading"><h2>いまの行動</h2><span id="event-phase">対戦開始</span></div>
+          <div id="event-announcement" role="status" aria-live="polite" aria-atomic="true"><h3 id="event-title">本日の星勘定、開幕です</h3><p id="event-description">使われたカードと効果をここに表示します。勘定違いは、ここで確認。</p><p id="event-target" hidden></p></div>
+          <ul id="event-results" aria-label="行動の結果"></ul>
+        </section>
+        <section class="log-panel"><div class="panel-heading"><h2>星の帳簿</h2><span>BATTLE LOG</span></div><ol id="battle-log" aria-label="戦闘履歴"></ol></section>
+        <div class="sidebar-bottom"><span class="offline-dot"></span> OFFLINE READY <span>PHASE 04</span></div>
+      </aside>
+    </main>
+    <footer class="page-footer"><span>HOSHIKANJO <span>星勘定の決闘</span></span><span>76の洒落もの。あなたの22枚。</span><button id="restart-button" class="text-button">新しい対戦 ↻</button></footer>
+  </div>
+  <div class="touch-toolbar" aria-label="タップ操作"><button id="inspect-toggle" aria-pressed="false">詳細を見る</button><button id="touch-end-turn">ターン終了 →</button></div>
+  <div id="power-effect-layer" class="power-effect-layer" hidden aria-hidden="true"></div>
+  <dialog id="cpu-dialog" class="modal cpu-modal" aria-labelledby="cpu-dialog-title"><div class="modal-heading"><span class="eyebrow">CPU OPPONENT · PHASE 04</span><button class="close-modal" aria-label="CPU設定を閉じる">×</button></div><h2 id="cpu-dialog-title">対戦相手を選ぶ</h2><p class="dialog-intro">難易度と戦術を選んで、新しい星の巡りへ。</p><section class="cpu-panel" aria-label="CPUの設定"><div class="panel-heading"><h2>対戦相手</h2><span>CPU</span></div><div class="cpu-selects"><label for="cpu-difficulty">難易度<select id="cpu-difficulty"><option value="easy">入門</option><option value="normal" selected>標準</option><option value="hard">上級</option><option value="expert">達人</option></select></label><label for="cpu-style">戦術<select id="cpu-style"><option value="balanced">均衡</option><option value="aggressive">攻勢</option><option value="defensive">守勢</option><option value="auto">おまかせ</option></select></label></div><p id="cpu-setting-description"></p><p id="cpu-match-status" role="status" aria-live="polite"></p><small>変更は次の対戦から反映します。</small><button class="editor-button" id="cpu-new-game">この設定で新しい対戦 ↻</button></section><button class="text-button close-modal">対戦に戻る</button></dialog>
+  <dialog id="help-dialog" class="modal">
+    <div class="modal-heading"><span class="eyebrow">HOW TO PLAY · PHASE 04</span><button class="close-modal" aria-label="閉じる">×</button></div>
+    <h2>はじめの一手、手取り足取り。</h2><p class="dialog-intro">精霊と呪文を使い、相手のHPを25から0にしよう。</p>
+    <div class="help-steps">
+      <div><b>01</b><h3>精霊と呪文を使う</h3><p>手札をクリック。左上の数字が必要マナです。対象呪文は光るユニットかヒーローを選ぶと発動。対象選択中はまだ消費されません。</p></div>
+      <div><b>02</b><h3>ユニットで攻撃する</h3><p>光る自分のユニットを選び、光る敵をクリック。速攻以外は召喚したターンに攻撃できません。挑発がいる場合は先に倒します。</p></div>
+      <div><b>03</b><h3>星の巡りを渡す</h3><p>「ターン終了」でCPUへ。自分のターンの開始時に1枚引きます（先攻の初回を除く）。マナ上限が1増えて全回復します（最大10）。</p></div>
+    </div>
+    <dl class="ability-guide">
+      <dt>初手の交換</dt><dd>先攻・後攻は毎対戦ランダム。構築戦・アリーナとも両者3枚から交換したいカードを選び、1回だけ交換できます。戻すカードは交換を引き終えてから山札に戻します。先攻の初回ターンはドローせず、後攻だけ初回からドローします。2巡目以降は双方ドローします。</dd>
+      <dt>後攻支援</dt><dd>両モードとも後攻は初手確定後、0マナ呪文「後攻の先借り」を1枚得ます。そのターンのみマナ+1（最大10）。一時マナから先に消費し、余りはターン終了時に消えます。通常のマナ上限は増えません。</dd>
+      <dt>アリーナ</dt><dd>まず共有候補のヒーローを1人ずつ選び、続いて各自の非公開3候補から1枚ずつ獲得する22回のドラフト。共有の先取り抽選はヒーローだけです。異なる回での同名カードは枚数制限なし。各自の同じ回の候補は異なる3種類。相手の候補・獲得カード・マナカーブは非公開。自分の獲得済みマナカーブを見ながら自由に組めます。時間制限はなく、閉じると一時停止します。完成後に「このデッキで対戦」を押してください。</dd>
+      <dt>iPhoneでの操作</dt><dd>縦持ち・横持ちに対応。下部の「詳細を見る」をオンにしてカードやユニットをタップすると詳細を開きます。もう一度押すと対戦操作に戻ります。手札とピック候補は横にスワイプ、盤面は縦にスクロールできます。下部の「ターン終了」からも交代できます。</dd>
+      <dt>武器</dt><dd>装備後、「武器で攻撃」のボタンから敵を選択。毎ターン1回、装備直後も攻撃可能。攻撃で耐久を1消費し、0で壊れます。新しい武器は上書きしますが攻撃権は増えません。挑発に従い、ユニットからの反撃は同時にヒーローが受けます。毒はヒーローには効きません。</dd>
+      <dt>逸品</dt><dd>金の専用枠。強力な代わりに構築では同名1枚まで。アリーナ・発見・変異による獲得は制限しません。</dd>
+      <dt>速攻</dt><dd>召喚したターンから攻撃できます。攻撃は毎ターン1回まで。</dd>
+      <dt>挑発</dt><dd>敵の通常攻撃を引き受けます。呪文の対象は制限しません。</dd>
+      <dt>星護</dt><dd>水色の光輪と「星護あり」の帯が目印。最初の正のダメージを1回無効化し、毒も防ぎます。消費後は光輪が消え「星護消失」に変化。呪文やヒーローパワーで付与し直せます。</dd>
+      <dt>毒</dt><dd>戦闘で1以上のダメージを与えたユニットを倒します。反撃時も有効。ヒーローには即死効果なし。</dd>
+      <dt>召喚時／死亡時</dt><dd>召喚や退場に合わせ、カード記載の効果が自動発動します。</dd>
+      <dt>呪文と強化</dt><dd>ダメージ、回復、ドロー、全体攻撃、+2/+2、−2/−2。呪文は場を使わず、場が5体でも使用できます。</dd>
+      <dt>CPUの設定</dt><dd>入門・標準・上級の3段階と、均衡・攻勢・守勢の戦術を選べます。「この設定で新しい対戦」で開始。CPUも同じマナ・カード・合法手のルールで戦い、相手の手札や山札順は判断に使いません。</dd>
+      <dt>対戦の振り返り</dt><dd>対戦後の「この対戦を振り返る」から、両者の手札・盤面、行動前後の変化、CPUの比較候補・評価・探索数を確認できます。前後の手への移動、位置指定、速度変更と自動再生に対応。記録は現在の対戦のみで、新しい対戦やページ更新で消えます。</dd>
+      <dt>CPU同士の観戦</dt><dd>「CPU同士を観戦」から双方のデッキ・難易度・戦術を選びます。下がCPU A、上がCPU Bです。初手交換と発見も自動。進行速度と一時停止を使い、双方の手札や判断を確認できます。「自分で対戦する」で通常対戦へ戻ります。</dd>
+      <dt>ヒーローパワー</dt><dd>2マナで自分のターンに1回。ボタンを押して光る対象を選択します。回復・1ダメージ・星護の3種類から、デッキ編集で選べます。</dd>
+      <dt>デッキ編集</dt><dd>全76種類。通常は同名2枚、逸品は同名1枚まで。22枚で完成、最大12デッキを保存。「保存して対戦開始」で選んだデッキを使用します。CPUは3つの構築済みデッキから選びます。</dd>
+    </dl>
+    <div class="rule-note"><strong>⚔ 攻撃力　♥ HP　◇ マナ</strong><p>ユニット同士は同時ダメージ。HPが0以下で退場します。回復の上限はヒーロー25、ユニットは現在の最大HP。HPを下げる弱体化は星護では防げません。</p><p>手札は10枚までで超過ドローは破棄。山札切れ後のドローは1、2、3…と増えるダメージになります。</p><p>「選択解除」、同じカードの再クリック、Escでキャンセル。カードを右クリックすると詳細を確認できます。</p><p>進行速度は「ゆっくり」が初期設定。「いまの行動」でカード・対象・HP変化を確認できます。「CPUを一時停止」で演出と次の行動を止めて読めます。演出中の連続操作はできませんが、新しい対戦はいつでも開始できます。</p></div>
+    <button class="primary-button close-modal">対戦に戻る →</button>
+  </dialog>
+  <dialog id="collection-dialog" class="modal collection-modal"><div class="modal-heading"><span class="eyebrow" id="collection-count">THE COLLECTION · 76 CARDS</span><button class="close-modal" aria-label="閉じる">×</button></div><h2>星いもの図鑑。</h2><p class="dialog-intro">ユニット41種類・呪文30種類・武器5種類。通常は同名2枚、逸品は同名1枚まで。「デッキ編集」で、あなたの22枚を組みましょう。</p><div id="collection-grid" class="collection-grid"></div></dialog>
+  <dialog id="deck-dialog" class="modal deck-modal" aria-labelledby="deck-editor-title">
+    <div class="modal-heading"><span class="eyebrow">DECK WORKSHOP · PHASE 03</span><button class="close-modal" aria-label="デッキ編集を閉じる">×</button></div>
+    <div class="deck-title-row"><div><h2 id="deck-editor-title">手札の仕込み、手抜きなし。</h2><p class="dialog-intro">全76種類から22枚。通常は同名2枚、逸品は同名1枚まで。ヒーローパワーも一緒に選ぼう。</p></div><span class="workshop-seal" aria-hidden="true">✧</span></div>
+    <div class="deck-toolbar"><label>デッキ <select id="deck-select"></select></label><button id="deck-new" class="editor-button">＋ 新規</button><button id="deck-duplicate" class="editor-button">複製</button><button id="deck-import" class="editor-button">ファイル読込</button><input id="deck-file" type="file" accept=".json,application/json" hidden></div>
+    <p id="deck-notice" class="deck-notice" role="status" aria-live="polite"></p>
+    <div class="deck-workspace"><section class="deck-library" aria-label="採用できるカード">
+      <div class="deck-filters"><label class="search-label">カード検索<input id="deck-search" type="search" placeholder="名前・能力・分類から検索"></label><label>マナ<select id="deck-cost"><option value="">すべて</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></label><label>種類<select id="deck-type"><option value="">すべて</option><option value="unit">ユニット</option><option value="spell">呪文</option><option value="weapon">武器</option></select></label><label>能力<select id="deck-trait"><option value="">すべて</option><option value="aegis">星護</option><option value="taunt">挑発</option><option value="swift">速攻</option><option value="poison">毒</option><option value="death">死亡時</option><option value="discover">発見</option><option value="transform">変身</option><option value="mutate">山札変異</option><option value="unique">逸品（1枚制限）</option></select></label></div>
+      <div class="library-heading"><span>YOUR COLLECTION · 各2枚まで使用可能</span><span id="deck-filter-count"></span></div><div id="deck-cards" class="editor-card-grid"></div>
+    </section><section class="deck-summary" aria-label="編集中のデッキ">
+      <label for="deck-name">デッキ名 <span>40文字まで</span></label><input id="deck-name" maxlength="40" autocomplete="off">
+      <label for="deck-power">ヒーローパワー</label><select id="deck-power"></select><p id="deck-power-description"></p>
+      <div class="deck-total"><span>DECK</span><strong id="deck-size"></strong></div><p id="deck-stats"></p><div id="deck-curve" class="deck-curve" aria-label="マナカーブ"></div><div id="deck-rows" class="deck-rows"></div>
+    </section></div>
+    <div class="deck-editor-footer"><div><p id="deck-validation"></p><small class="save-help">保存はこのブラウザ内。今の対戦は変更しません。</small></div><div class="deck-save-row"><button id="deck-delete" class="text-button">削除</button><button id="deck-export" class="editor-button">ファイル書出</button><button id="deck-save" class="editor-button">保存</button></div><button id="deck-start" class="primary-button">保存して対戦開始 →</button></div>
+  </dialog>
+  <dialog id="detail-dialog" class="modal detail-modal"><div class="modal-heading"><span class="eyebrow">CARD DETAILS</span><button class="close-modal" aria-label="閉じる">×</button></div><div id="card-detail"></div></dialog>
+  <dialog id="result-dialog" class="modal result-modal"><div class="modal-heading"><span class="eyebrow">DUEL COMPLETE</span><button class="close-modal" aria-label="盤面を見る">×</button></div><div class="result-star" aria-hidden="true">✧</div><span class="eyebrow" id="result-english"></span><h2 id="result-title"></h2><p id="result-description"></p><p class="result-stat" id="result-stat"></p><button class="primary-button" id="rematch-button">もう一度、星を巡る ↻</button><button class="editor-button" id="result-review">この対戦を振り返る</button><button class="text-button close-modal">盤面を見る</button></dialog>
+  <dialog id="mulligan-dialog" class="modal opening-modal" aria-labelledby="mulligan-title">
+    <div class="modal-heading"><span class="eyebrow">OPENING HAND</span><button id="mulligan-watch" class="text-button">CPU同士を観戦</button><button id="mulligan-arena" class="text-button">アリーナへ ↗</button></div>
+    <h2 id="mulligan-title">手始めに、手の内チェック。</h2><p id="mulligan-order" class="dialog-intro"></p>
+    <p>交換したいカードをクリックしてください。選択しなければ、すべてキープします。</p>
+    <div id="mulligan-cards" class="opening-cards" role="group" aria-label="初手から交換するカード"></div>
+    <p id="mulligan-count" role="status" aria-live="polite"></p>
+    <div class="opening-actions"><button id="mulligan-restart" class="text-button">対戦を引き直す ↻</button><button id="mulligan-confirm" class="primary-button">この初手で対戦開始 →</button></div>
+  </dialog>
+  <dialog id="arena-dialog" class="modal draft-modal" aria-labelledby="draft-title">
+    <div class="modal-heading"><span class="eyebrow">PRIVATE DRAFT · ARENA</span><button class="close-modal" aria-label="ドラフトを一時停止して閉じる">×</button></div>
+    <div class="draft-heading"><h2 id="draft-title">相棒のヒーロー、星いのは誰？</h2><strong id="draft-step">HERO PICK</strong></div>
+    <p id="draft-priority" class="dialog-intro"></p><p class="draft-rules">ヒーローは共有3候補から先取り。カードは各自の非公開3候補から1枚ずつ、22枚で完成。相手の候補や獲得カードは見えません。</p>
+    <p id="draft-status" class="draft-status" role="status" aria-live="polite"></p>
+    <div id="draft-offers" class="draft-offers" role="group" aria-label="あなたのピック候補"></div>
+
+    <div class="draft-decks"><section><div class="panel-heading"><h3>あなたのデッキ</h3><strong id="draft-player-count"></strong></div><p id="draft-player-hero"></p><p class="draft-curve-label">獲得マナカーブ <small>上：枚数 / 下：マナ</small></p><div id="draft-curve" class="draft-curve" aria-label="あなたの獲得マナカーブ"></div><p id="draft-player-stats" class="draft-stats"></p><ul id="draft-player-cards"></ul></section><section><div class="panel-heading"><h3>CPUのデッキ（非公開）</h3><strong id="draft-cpu-count"></strong></div><p id="draft-cpu-hero"></p><p class="draft-curve-label">獲得カード・マナカーブは非公開です。</p><div hidden id="draft-cpu-curve" class="draft-curve" aria-label="CPUの獲得マナカーブ"></div><p id="draft-cpu-stats" class="draft-stats"></p><ul id="draft-cpu-cards"></ul></section></div>
+    <details class="draft-recent"><summary>あなたの直近の獲得履歴</summary><ol id="draft-history"></ol></details>
+    <div class="draft-actions"><button id="draft-restart" class="text-button">最初からドラフト ↻</button><button id="draft-constructed" class="text-button">構築戦で対戦</button><button id="draft-start" class="primary-button" hidden>このデッキで対戦 →</button></div>
+    <p class="save-help">ドラフトはこのページを開いている間だけ保持されます。閉じると進行を一時停止。完成デッキでの再戦もできます。</p>
+  </dialog>
+  <dialog id="discover-dialog" class="modal discover-modal" aria-labelledby="discover-title"><span class="eyebrow">DISCOVER · CHOOSE ONE</span><h2 id="discover-title">星い一枚、見つけました。</h2><p class="dialog-intro">3候補から1枚を手札に加えます。選択に追加マナは不要。同じターンに使用できます。</p><div id="discover-offers" class="draft-offers" role="group" aria-label="発見するカードの候補"></div><p class="discover-note">ほかの2枚は消えます。手札が10枚の場合は選んだカードを失います。</p><button id="discover-restart" class="text-button">新しい対戦 ↻</button></dialog>
+  <dialog id="watch-dialog" class="modal watch-modal" aria-labelledby="watch-title"><div class="modal-heading"><span class="eyebrow">CPU vs CPU</span><button class="close-modal" aria-label="観戦設定を閉じる">×</button></div><h2 id="watch-title">手出し無用の、手合わせ見物。</h2><p>双方の手札とCPUの評価を公開して観戦します。CPU自身は相手の非公開情報を使いません。先後は毎回抽選、初手交換も自動です。</p><div class="watch-settings"><section><h3>CPU A · 下側</h3><label>デッキ<select id="watch-player-deck"></select></label><label>難易度<select id="watch-player-difficulty"><option value="easy">入門</option><option value="normal" selected>標準</option><option value="hard">上級</option><option value="expert">達人</option></select></label><label>戦術<select id="watch-player-style"><option value="balanced">均衡</option><option value="aggressive">攻勢</option><option value="defensive">守勢</option></select></label></section><section><h3>CPU B · 上側</h3><label>デッキ<select id="watch-cpu-deck"></select></label><label>難易度<select id="watch-cpu-difficulty"><option value="easy">入門</option><option value="normal" selected>標準</option><option value="hard">上級</option><option value="expert">達人</option></select></label><label>戦術<select id="watch-cpu-style"><option value="balanced">均衡</option><option value="aggressive">攻勢</option><option value="defensive">守勢</option></select></label></section></div><p>「観戦開始」で現在の対戦を終了し、新しい対戦を始めます。進行速度は盤面右の設定から変更できます。</p><button id="watch-start" class="primary-button">観戦開始 →</button></dialog>
+  <dialog id="review-dialog" class="modal review-modal" aria-labelledby="review-title"><div class="modal-heading"><span class="eyebrow">MATCH REVIEW</span><button class="close-modal" aria-label="振り返りを閉じる">×</button></div><h2 id="review-title">あの一手、ひと手間かけて振り返る。</h2><p>実際の盤面と、行動時にCPUが比較した評価の記録です。両者の手札を表示します。</p><div class="review-controls"><button id="review-prev" class="editor-button">← 前の手</button><button id="review-next" class="editor-button">次の手 →</button><button id="review-auto" class="editor-button">自動再生 ▶</button><label>速度<select id="review-speed"><option value="study">じっくり</option><option value="slow" selected>ゆっくり</option><option value="normal">標準</option><option value="fast">速め</option></select></label><label>盤面<select id="review-phase"><option value="after">行動後</option><option value="before">行動前</option></select></label></div><input id="review-slider" type="range" min="0" max="0" value="0" aria-label="振り返る手順"><p id="review-position" role="status"></p><strong id="review-actor"></strong><p id="review-turn"></p><div class="review-layout"><div id="review-board"></div><section class="thought-panel"><h3>この手の判断と結果</h3><div id="review-thought"></div><ul id="review-changes"></ul></section></div></dialog>
+  <noscript>このゲームを遊ぶには、ブラウザのJavaScriptを有効にしてください。</noscript>
+</body>
+</html>
