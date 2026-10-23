@@ -65,12 +65,12 @@
       `<span class="ability-badge ability-${key}" title="${KEYWORDS[key].name}：${KEYWORDS[key].description}">${KEYWORDS[key].name}</span>`).join('') + (traits.classes.includes('trait-death') ? '<span class="ability-badge ability-death">死亡時</span>' : '')+(unit.silenced?'<span class="ability-badge ability-silence">沈黙</span>':'');
   }
   function cardMarkup(card, uid, mode = 'hand') {
-    const reason = mode === 'hand' ? (spectator ? 'CPUが操作しています。' : busy ? '行動の表示が終わるまでお待ちください。' : canPlayCard(state, 'player', uid)) : null;
-    const classes = mode === 'hand' ? (reason ? 'unavailable' : 'playable') : '';
+    const reason = mode === 'hand' ? (inspecting ? null : spectator ? 'CPUが操作しています。' : busy ? '行動の表示が終わるまでお待ちください。' : canPlayCard(state, 'player', uid)) : null;
+    const classes = mode === 'hand' ? (inspecting ? 'inspectable' : reason ? 'unavailable' : 'playable') : '';
     const spell = card.type === 'spell', weapon=card.type==='weapon', unique=card.rarity==='unique';
     const stats = weapon ? `<span class="stat attack-stat">${card.attack}</span><span class="stat health-stat durability-stat">${card.durability}</span><span class="weapon-seal">⚒ 武器</span>` : spell ? '<span class="spell-seal">✧ 呪文</span>' : `<span class="stat attack-stat">${card.attack}</span><span class="stat health-stat">${card.health}</span>`;
     const hint = weapon ? 'クリックで装備' : spell ? (card.target ? 'クリックで対象を選択' : 'クリックで使用') : 'クリックで召喚';
-    const description = `${card.name}、${card.cost}マナ、${weapon ? `武器、攻撃力${card.attack}、耐久${card.durability}` : spell ? '呪文' : `攻撃力${card.attack}、HP${card.health}`}、${unique?'逸品・構築は同名1枚':''}。${card.description}`;
+    const description = `${card.name}、${card.cost}マナ、${weapon ? `武器、攻撃力${card.attack}、耐久${card.durability}` : spell ? '呪文' : `攻撃力${card.attack}、HP${card.health}`}${unique?'、逸品・構築は同名1枚':''}。${card.description}`;
     return `<button class="card ${card.expansion?'expansion-card':''} ${classes} ${spell ? 'spell-card' : ''} ${weapon?'weapon-card':''} ${unique?'unique-card':''} skin-${card.tribe==='火の車団'?'ember':card.tribe==='月払い組'?'moon':card.tribe==='芽でたい森'?'grove':'star'} ${pendingCard === uid ? 'chosen-card' : ''}" data-card="${uid}" data-card-id="${card.id}" data-card-type="${card.type}" aria-label="${description}${reason ? reason : ''}" ${mode === 'hand' ? `aria-disabled="${Boolean(reason)}" aria-pressed="${pendingCard === uid}"` : ''} title="${mode === 'hand' ? (reason || hint + '。右クリックで詳細') : mode === 'opening' ? 'クリックで交換を選択・解除' : mode === 'draft' ? 'クリックでこのカードを獲得' : 'クリックで詳細'}"><span class="mana-cost">${card.cost}</span><span class="card-tribe">${spell ? '呪文 · ' : ''}${card.tribe}</span>${illustration(card, uid)}${unique?'<span class="rarity-label">✦ 逸品 · 構築1枚</span>':''}<span class="card-name">${card.name}</span><span class="card-description">${card.description}</span>${stats}</button>`;
   }
   function unitMarkup(unit, side) {

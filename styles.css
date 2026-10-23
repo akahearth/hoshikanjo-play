@@ -2177,3 +2177,12 @@ button { touch-action:manipulation; }
  .unit-name { font-size:9px; }
  .hand { justify-content:flex-start; }
 }
+
+@media(max-width:700px) {
+ .opening-cards { flex-wrap:nowrap; justify-content:flex-start; overflow-x:auto; padding:12px 4px 18px; }
+ .opening-cards .card { flex:0 0 155px; width:155px; height:250px; }
+ .opening-cards .card .card-art { height:125px; }
+ .opening-cards .card.expansion-card { height:270px; }
+ .opening-cards .card.expansion-card .card-art { height:105px; }
+}
+.card.inspectable { cursor:help; outline:1px dashed #dfcb91; }
