@@ -6,6 +6,10 @@
   const { draftScore } = cjs ? require('./strategy.js') : root.SeikanStrategy;
   // ヒーローだけ共有。カードは各自の非公開3候補から22回選ぶ。
   const DECK_SIZE = 22;
+  // 追加枚数に左右されず、各候補枠の逸品率を従来の5/76から少し抑える。
+  const UNIQUE_OFFER_RATE = .06;
+  const UNIQUE_CARDS = CARDS.filter(card=>card.rarity==='unique');
+  const STANDARD_CARDS = CARDS.filter(card=>card.rarity!=='unique');
   const MANA_COSTS = Object.freeze([...new Set(CARDS.map(card=>card.cost))].sort((a,b)=>a-b));
   const other = side => side === 'player' ? 'cpu' : 'player';
   const copy = state => JSON.parse(JSON.stringify(state));
@@ -17,10 +21,20 @@
   function offer(state, random) {
     const heroes = state.phase === 'heroes';
     const choices=pool=>shuffle(pool,random).slice(0,3).map(item=>({uid:`pick-${state.nextId++}`,id:item.id}));
+    function cardChoices(){
+      const unique=[...UNIQUE_CARDS],standard=[...STANDARD_CARDS],result=[];
+      for(let i=0;i<3;i++){
+        const rare=random()<UNIQUE_OFFER_RATE;
+        const pool=(rare&&unique.length)||!standard.length?unique:standard;
+        const [card]=pool.splice(Math.floor(random()*pool.length),1);
+        result.push({uid:`pick-${state.nextId++}`,id:card.id});
+      }
+      return result;
+    }
     state.offers = heroes?choices(HEROES):[];
     // カードはプレイヤーが22枚、その後CPUが22枚。待機側の候補はまだ作らない。
     state.priority = heroes?(random() < .5 ? 'player' : 'cpu'):state.player.cards.length<DECK_SIZE?'player':'cpu';
-    for(const side of ['player','cpu'])state[side].offers=!heroes&&side===state.priority?choices(CARDS):[];
+    for(const side of ['player','cpu'])state[side].offers=!heroes&&side===state.priority?cardChoices():[];
     state.round = heroes?0:state[state.priority].cards.length;
     state.active = state.priority; state.picks = 0;
   }
@@ -74,6 +88,6 @@
     }
     return [...choicesFor(state,'cpu')].sort((a,b)=>score(b)-score(a))[0]?.uid || null;
   }
-  const api = { DECK_SIZE, MANA_COSTS, manaCurve, createDraft, pick, deckErrors, chooseCpu, choicesFor, viewDraft };
+  const api = { DECK_SIZE, UNIQUE_OFFER_RATE, MANA_COSTS, manaCurve, createDraft, pick, deckErrors, chooseCpu, choicesFor, viewDraft };
   if (cjs) module.exports=api; else root.SeikanArena=api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

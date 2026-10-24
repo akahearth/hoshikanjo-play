@@ -10,7 +10,10 @@
     if(card.keywords.includes('swift'))value+=card.attack*.65+(card.keywords.includes('poison')?3:0);
     for(const e of card.effects){
       const factor=e.trigger==='death' ? .65:1;
-      value+=factor*(e.type==='draw'?e.amount*3.2:e.type==='discover'?4.8:e.type==='transform'?(e.into==='cotton-sprout'?9:6):e.type==='damage'?e.amount*(e.target==='enemy-units'?3.1:1.6):e.type==='heal'?e.amount*(e.target==='friendly-units' ? .65:.5):e.type==='buff'?(Math.abs(e.attack||0)*1.1+Math.abs(e.health||0)*1.2)*(e.target?.includes('units')?1.7:1):e.type==='destroy'? (e.target==='large-enemies'?13:11):e.type==='bounce'?6:e.type==='silence'?4:e.type==='shatter'?3:e.type==='missiles'?e.amount*e.count*1.5:e.type==='summon'?e.amount*(e.into?9:5):e.type==='mutate'? (e.delta===0?3:e.from==='unit'?2.5:5):e.type==='transformRandom'?(e.maxCost===3?8.5:6):e.type==='shield'?3:e.type==='mana'?2:0);
+      // 小さなトークンも大型守護樹も、一律に大型としてピックしない。
+      const summoned=e.type==='summon'&&e.into?BY_ID[e.into]:null;
+      const summonValue=summoned?Math.min(9,summoned.attack*1.3+summoned.health*.8+(summoned.keywords.includes('taunt')?1.2:0)):5;
+      value+=factor*(e.type==='draw'?e.amount*3.2:e.type==='discover'?4.8:e.type==='transform'?(e.into==='cotton-sprout'?9:6):e.type==='damage'?e.amount*(e.target==='enemy-units'?3.1:1.6):e.type==='heal'?e.amount*(e.target==='friendly-units' ? .65:.5):e.type==='buff'?(Math.abs(e.attack||0)*1.1+Math.abs(e.health||0)*1.2)*(e.target?.includes('units')?1.7:1):e.type==='destroy'? (e.target==='large-enemies'?13:11):e.type==='bounce'?6:e.type==='silence'?4:e.type==='shatter'?3:e.type==='missiles'?e.amount*e.count*1.5:e.type==='summon'?e.amount*summonValue:e.type==='mutate'? (e.delta===0?3:e.from==='unit'?2.5:5):e.type==='transformRandom'?(e.maxCost===3?8.5:6):e.type==='shield'?3:e.type==='mana'?2:0);
     }
     return value/(card.cost+1)*3+value*.12;
   }
