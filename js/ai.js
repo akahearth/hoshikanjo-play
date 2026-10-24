@@ -74,7 +74,8 @@
     const base=boardScore(owner) - boardScore(enemy) * style.enemyBoard
       + owner.hp * style.ownHp - Math.max(0, 10 - owner.hp) * style.danger
       - enemy.hp * style.enemyHp + Math.max(0, 8 - enemy.hp) * .3
-      + owner.hand.length * 1.5 - enemy.hand.length * 1.1 + owner.mana * .03
+      // 終了済みターンの余りマナは持ち越せない。使い残しを有利と数えない。
+      + owner.hand.length * 1.5 - enemy.hand.length * 1.1 + (state.active===side?owner.mana*.03:0)
       + (owner.weapon?owner.weapon.attack*Math.min(3,owner.weapon.durability)*.6:0) - (enemy.weapon?enemy.weapon.attack*Math.min(3,enemy.weapon.durability)*.6:0) + (owner.planningValue||0)-(enemy.planningValue||0);
     if(!style.advanced)return base;
     const guards=owner.board.filter(u=>hasKeyword(u,'taunt'));
