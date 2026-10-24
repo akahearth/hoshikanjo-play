@@ -2023,6 +2023,9 @@ h1 {
 #draft-step { color:var(--gold); white-space:nowrap; font-size:13px; }
 .draft-rules { color:var(--muted); line-height:1.8; }
 .draft-status { min-height:48px; display:flex; align-items:center; padding:12px 16px; border:1px solid var(--line); background:#1d3932; color:var(--gold); line-height:1.6; }
+.draft-status[aria-busy="true"]::before { content:''; flex:0 0 16px; height:16px; margin-right:12px; border:2px solid var(--line); border-top-color:var(--gold); border-radius:50%; animation:draft-thinking .8s linear infinite; }
+@keyframes draft-thinking { to { transform:rotate(360deg); } }
+@media(prefers-reduced-motion:reduce) { .draft-status[aria-busy="true"]::before { animation:none; } }
 .draft-offers { display:flex; justify-content:center; gap:30px; padding:18px 0 28px; min-height:285px; }
 .draft-offers .card { flex:0 0 175px; transform:none; }
 .draft-offers .card:not(:disabled):hover { transform:translateY(-5px); border-color:var(--gold); }

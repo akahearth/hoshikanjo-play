@@ -10,11 +10,11 @@
     const who=side=>side==='player'?'あなた':'CPU';
     const name=(phase,id)=>phase==='heroes'?BY_HERO[id].name:BY_ID[id].name;
     function render() {
-      const heroes=draft.phase==='heroes', complete=draft.phase==='complete';
+      const heroes=draft.phase==='heroes', complete=draft.phase==='complete', cpuBatch=!heroes&&!complete&&draft.active==='cpu';
       const visible=viewDraft(draft);
-      $('draft-step').textContent=complete?`${DECK_SIZE} / ${DECK_SIZE} · 完成`:heroes?'HERO PICK':`${draft.round+1} / ${DECK_SIZE} · RANDOM PICK`;
-      $('draft-title').textContent=complete?'二十二枚、ひとつも手抜きなし。':heroes?'相棒のヒーロー、星いのは誰？':'自分だけの三択、手の内は内緒。';
-      $('draft-priority').textContent=complete?'22枚完成。CPUの獲得カードは非公開。対戦の先攻・後攻は開始時に抽選します。':heroes?`この回は${who(draft.priority)}が先にヒーローを選択。いまは${who(draft.active)}の選択順です。`:`それぞれの非公開3候補から1枚ずつ選びます。${busy?(cpuChoosing?'CPUが自分の候補を比較中。':'あなたの選択結果を確認中。'):'あなたの候補から選んでください。'}`;
+      $('draft-step').textContent=complete?`${DECK_SIZE} / ${DECK_SIZE} · 完成`:heroes?'HERO PICK':cpuBatch?'CPU · DECK PICK':`${draft.round+1} / ${DECK_SIZE} · RANDOM PICK`;
+      $('draft-title').textContent=complete?'二十二枚、ひとつも手抜きなし。':heroes?'相棒のヒーロー、星いのは誰？':cpuBatch?'CPUも、二十二枚をひと勘定。':'自分だけの三択、手の内は内緒。';
+      $('draft-priority').textContent=complete?'22枚完成。CPUの獲得カードは非公開。対戦の先攻・後攻は開始時に抽選します。':heroes?`この回は${who(draft.priority)}が先にヒーローを選択。いまは${who(draft.active)}の選択順です。`:cpuBatch?'CPUが非公開の候補から22枚をまとめて選んでいます。約2秒で完了します。':'あなたの非公開3候補から1枚ずつ、22枚続けて選んでください。';
       $('draft-status').textContent=announcement;
       $('draft-offers').innerHTML=(previewOffers || visible.offers).map(choice=>{
         const hero=BY_HERO[choice.id];
@@ -22,7 +22,8 @@
         // カードは既存のbuttonを使い、ヒーローだけ独自buttonにする（入れ子禁止）。
         return heroes?`<button class="hero-pick" data-draft-pick="${choice.uid}" ${busy||draft.active!=='player'?'disabled':''}>${content}</button>`:content.replace('<button ',`<button data-draft-pick="${choice.uid}" ${busy||draft.active!=='player'?'disabled':''} `);
       }).join('');
-      $('draft-offers').hidden=complete;
+      $('draft-offers').hidden=complete||cpuBatch;
+      $('draft-status').setAttribute('aria-busy',String(cpuChoosing));
       $('draft-start').hidden=!complete; $('draft-start').disabled=!complete||busy;
       const acquired=viewDraft(pendingDraft||draft);
       for (const side of ['player']) {
@@ -48,8 +49,13 @@
       const phase=draft.phase, round=draft.round;
       const result=pick(draft,actor,uid);
       if(!result.ok){announcement=result.message;render();return;}
-      const token=epoch; busy=true;cpuChoosing=false;
-      announcement=actor==='cpu'&&phase==='cards'?`CPUがカードを1枚獲得（非公開）。${round+1}回目のピック。`:`${who(actor)}が「${name(phase,result.choice.id)}」を獲得。${phase==='heroes'?'':`${round+1}回目のピック。`}`;
+      const token=epoch;
+      announcement=`${who(actor)}が「${name(phase,result.choice.id)}」を獲得。${phase==='heroes'?'':`${round+1}回目のピック。`}`;
+      if(phase==='cards') {
+        // 次の三択へすぐ進める。CPUの待ち時間は22枚を選んだ後の1回だけ。
+        draft=result.state;render();void runCpu(token);return;
+      }
+      busy=true;cpuChoosing=false;
       // 取得直後は元の候補を残し、結果を読んでから次の選択へ進める。
       pendingDraft=result.state;previewOffers=choicesFor(draft,'player').filter(item=>item.uid!==uid); render();
       if(!await playback.wait(1600)||token!==epoch)return;
@@ -58,12 +64,22 @@
     async function runCpu(token=epoch) {
       if(busy||draft.active!=='cpu'||draft.phase==='complete')return;
       busy=true;cpuChoosing=true;render();
+      if(draft.phase==='cards') {
+        announcement='あなたの22枚が完成。CPUがデッキを組んでいます（獲得カードは非公開）。';render();
+        if(!await playback.wait(2000)||token!==epoch)return;
+        while(draft.phase==='cards'&&draft.active==='cpu') {
+          const result=pick(draft,'cpu',chooseCpu(draft,style()));
+          if(!result.ok)throw Error(result.message);
+          draft=result.state;
+        }
+        busy=false;cpuChoosing=false;announcement='双方の22枚が完成しました。CPUの獲得カードは非公開です。';render();return;
+      }
       if(!await playback.wait(1300)||token!==epoch)return;
       const choice=chooseCpu(draft,style());busy=false;
       if(choice)void take('cpu',choice);
     }
     function restart() {
-      playback.cancel();epoch++;busy=false;cpuChoosing=false;pendingDraft=null;previewOffers=null;draft=createDraft();announcement='ヒーローは共有候補から。カードは各自の非公開3候補から22枚を選びます。時間制限はありません。';render();void runCpu();
+      playback.cancel();playback.resume();epoch++;busy=false;cpuChoosing=false;pendingDraft=null;previewOffers=null;draft=createDraft();announcement='ヒーローは共有候補から。あなたが22枚続けて選んだ後、CPUがまとめて選びます。時間制限はありません。';render();void runCpu();
     }
     $('draft-offers').addEventListener('click',event=>{
       const choice=event.target.closest('[data-draft-pick]');

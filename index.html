@@ -6,27 +6,27 @@
   <meta name="theme-color" content="#102b2b">
   <meta name="description" content="勝ち星、いただきます。星と精霊の洒落が効いた、オフラインで遊べるターン制カードゲーム。">
   <title>星勘定の決闘 | HOSHIKANJO</title>
-  <link rel="icon" href="assets/favicon.svg?v=2.0.0-36309c178097" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon.svg?v=2.0.1-36309c178097" type="image/svg+xml">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="星勘定">
-  <link rel="manifest" href="manifest.webmanifest?v=2.0.0-871f04ed9ad1">
-  <link rel="stylesheet" href="styles.css?v=2.0.0-15ead0605700">
-  <script defer src="js/cards.js?v=2.0.0-c1095abc8a2c"></script>
-  <script defer src="js/strategy.js?v=2.0.0-23e13302ad16"></script>
-  <script defer src="js/heroes.js?v=2.0.0-e0ec92a3efbd"></script>
-  <script defer src="js/decks.js?v=2.0.0-e193b59a7436"></script>
-  <script defer src="js/arena.js?v=2.0.0-11be6178cb40"></script>
-  <script defer src="js/effects.js?v=2.0.0-9407767addfa"></script>
-  <script defer src="js/engine.js?v=2.0.0-5ab255b7799d"></script>
-  <script defer src="js/ai.js?v=2.0.0-730e58eca2b1"></script>
-  <script defer src="js/art.js?v=2.0.0-54ce52ce5094"></script>
-  <script defer src="js/traits.js?v=2.0.0-a11a8cc20e8a"></script>
-  <script defer src="js/playback.js?v=2.0.0-e41084e7ac26"></script>
-  <script defer src="js/review.js?v=2.0.0-fdd3b2a90468"></script>
-  <script defer src="js/power-effects.js?v=2.0.0-10b2b14c74b2"></script>
-  <script defer src="js/deck-editor.js?v=2.0.0-b8cb17af545b"></script>
-  <script defer src="js/arena-editor.js?v=2.0.0-3ca11a7814b4"></script>
-  <script defer src="js/app.js?v=2.0.0-40533cac1a95"></script>
+  <link rel="manifest" href="manifest.webmanifest?v=2.0.1-871f04ed9ad1">
+  <link rel="stylesheet" href="styles.css?v=2.0.1-aa6ce3636a68">
+  <script defer src="js/cards.js?v=2.0.1-c1095abc8a2c"></script>
+  <script defer src="js/strategy.js?v=2.0.1-23e13302ad16"></script>
+  <script defer src="js/heroes.js?v=2.0.1-e0ec92a3efbd"></script>
+  <script defer src="js/decks.js?v=2.0.1-e193b59a7436"></script>
+  <script defer src="js/arena.js?v=2.0.1-4752093f7bce"></script>
+  <script defer src="js/effects.js?v=2.0.1-9407767addfa"></script>
+  <script defer src="js/engine.js?v=2.0.1-5ab255b7799d"></script>
+  <script defer src="js/ai.js?v=2.0.1-730e58eca2b1"></script>
+  <script defer src="js/art.js?v=2.0.1-54ce52ce5094"></script>
+  <script defer src="js/traits.js?v=2.0.1-a11a8cc20e8a"></script>
+  <script defer src="js/playback.js?v=2.0.1-e41084e7ac26"></script>
+  <script defer src="js/review.js?v=2.0.1-fdd3b2a90468"></script>
+  <script defer src="js/power-effects.js?v=2.0.1-10b2b14c74b2"></script>
+  <script defer src="js/deck-editor.js?v=2.0.1-b8cb17af545b"></script>
+  <script defer src="js/arena-editor.js?v=2.0.1-b43174a2fcff"></script>
+  <script defer src="js/app.js?v=2.0.1-40533cac1a95"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -141,7 +141,7 @@
   <dialog id="arena-dialog" class="modal draft-modal" aria-labelledby="draft-title">
     <div class="modal-heading"><span class="eyebrow">PRIVATE DRAFT · ARENA</span><button class="close-modal" aria-label="ドラフトを一時停止して閉じる">×</button></div>
     <div class="draft-heading"><h2 id="draft-title">相棒のヒーロー、星いのは誰？</h2><strong id="draft-step">HERO PICK</strong></div>
-    <p id="draft-priority" class="dialog-intro"></p><p class="draft-rules">ヒーローは共有3候補から先取り。カードは各自の非公開3候補から1枚ずつ、22枚で完成。相手の候補や獲得カードは見えません。</p>
+    <p id="draft-priority" class="dialog-intro"></p><p class="draft-rules">ヒーローは共有3候補から先取り。あなたが非公開3候補から22枚続けて選んだ後、CPUが約2秒でまとめて選びます。相手の候補や獲得カードは見えません。</p>
     <p id="draft-status" class="draft-status" role="status" aria-live="polite"></p>
     <div id="draft-offers" class="draft-offers" role="group" aria-label="あなたのピック候補"></div>
 

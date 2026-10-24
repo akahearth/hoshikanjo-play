@@ -18,12 +18,14 @@
     const heroes = state.phase === 'heroes';
     const choices=pool=>shuffle(pool,random).slice(0,3).map(item=>({uid:`pick-${state.nextId++}`,id:item.id}));
     state.offers = heroes?choices(HEROES):[];
-    for(const side of ['player','cpu'])state[side].offers=heroes?[]:choices(CARDS);
-    state.priority = heroes?(random() < .5 ? 'player' : 'cpu'):'player';
+    // カードはプレイヤーが22枚、その後CPUが22枚。待機側の候補はまだ作らない。
+    state.priority = heroes?(random() < .5 ? 'player' : 'cpu'):state.player.cards.length<DECK_SIZE?'player':'cpu';
+    for(const side of ['player','cpu'])state[side].offers=!heroes&&side===state.priority?choices(CARDS):[];
+    state.round = heroes?0:state[state.priority].cards.length;
     state.active = state.priority; state.picks = 0;
   }
   function createDraft(random = Math.random) {
-    const state = { version:3, phase:'heroes', round:0, nextId:1, active:null, priority:null, picks:0, offers:[], player:{hero:null,cards:[],offers:[]}, cpu:{hero:null,cards:[],offers:[]}, history:[] };
+    const state = { version:4, phase:'heroes', round:0, nextId:1, active:null, priority:null, picks:0, offers:[], player:{hero:null,cards:[],offers:[]}, cpu:{hero:null,cards:[],offers:[]}, history:[] };
     offer(state, random); return state;
   }
   const choicesFor=(state,actor)=>state.phase==='heroes'?state.offers:state[actor].offers;
@@ -46,12 +48,12 @@
     else next[actor].cards.push(choice.id);
     next.history.push({ actor, phase:next.phase, round:next.round, id:choice.id, priority:next.priority });
     next.picks++;
-    if (next.picks === 1) next.active = other(actor);
-    else {
-      if (next.phase === 'heroes') next.phase = 'cards';
-      else next.round++;
-      if (next.round === DECK_SIZE) { next.phase='complete'; next.active=null; next.offers=[];next.player.offers=[];next.cpu.offers=[]; }
-      else offer(next, random);
+    if (next.phase === 'heroes' && next.picks === 1) next.active = other(actor);
+    else if(next.phase === 'cards' && next.cpu.cards.length === DECK_SIZE) {
+      next.phase='complete'; next.round=DECK_SIZE; next.active=null; next.offers=[];next.player.offers=[];next.cpu.offers=[];
+    } else {
+      next.phase = 'cards';
+      offer(next, random);
     }
     return {ok:true,state:next,choice};
   }
