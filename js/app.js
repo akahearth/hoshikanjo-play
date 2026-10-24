@@ -97,6 +97,7 @@
     $('review-button').disabled=state.status!=='finished'||busy||!recording?.finished;
     for(const id of ['arena-button','deck-button','cpu-settings-button'])$(id).disabled=spectator;
     const handScroll = $('hand').scrollLeft;
+    const topHandScroll=$('watch-top-hand').scrollLeft,enemyHandScroll=$('enemy-hand').scrollLeft;
     $('player-order').textContent = `${spectator?'CPU A':'YOU'} · ${state.first === 'player' ? '先攻' : '後攻'} · ${state.mode === 'arena' ? 'ARENA' : '構築戦'}`;
     $('player-hero-name').textContent = BY_HERO[state.player.heroId]?.name || '森あげ役の旅人';
     $('cpu-hero-name').textContent = BY_HERO[state.cpu.heroId]?.name || '星よみ経理';
@@ -105,6 +106,11 @@
     $('cpu-match-status').textContent = '対戦中：' + DIFFICULTIES[matchCpu.difficulty].name + ' / ' + STYLES[matchCpu.style].name + (cpuThinking ? ' · 思考中' : '');
     $('round-label').textContent = `ROUND ${String(Math.ceil(state.turn / 2)).padStart(2, '0')}`;
     $('enemy-hand').innerHTML = spectator?state.cpu.hand.map(c=>cardMarkup(BY_ID[c.cardId],`watch-${c.uid}`,'watch')).join(''):Array.from({ length: state.cpu.hand.length }, () => '<span class="card-back" aria-hidden="true">✧</span>').join('');
+    $('enemy-hand').scrollLeft=enemyHandScroll;
+    $('watch-top-hand-zone').hidden=!spectator;
+    $('watch-top-hand-count').textContent=spectator?`${state.cpu.hand.length} / 10`:'';
+    $('watch-top-hand').innerHTML=spectator?(state.cpu.hand.length?state.cpu.hand.map(c=>cardMarkup(BY_ID[c.cardId],`top-watch-${c.uid}`,'watch')).join(''):'<p class="hand-empty">手札はありません。</p>'):'';
+    $('watch-top-hand').scrollLeft=topHandScroll;
     $('enemy-hand').setAttribute('aria-label', `CPUの手札${state.cpu.hand.length}枚`);
     $('cpu-resources').innerHTML = `<span class="resource-gem">◇</span> <strong>${state.cpu.mana} / ${state.cpu.maxMana}</strong><br>手札 <strong>${state.cpu.hand.length}</strong>　山札 <strong>${state.cpu.deck.length}</strong>`;
     const cpuPower = document.createElement('small'); cpuPower.className = 'cpu-power';
@@ -400,10 +406,11 @@
       else dispatch(selected==='player-hero'?{type:'weaponAttack',actor:'player',target:id==='cpu-hero'?'hero':id}:{ type: 'attack', actor: 'player', attacker: selected, target: id === 'cpu-hero' ? 'hero' : id });
     } else message('まず、手札の呪文か攻撃可能な自分のユニットを選んでください。', true);
   }
-  function showDetail(id) {
+  function showDetail(id,side='player') {
     const card = BY_ID[id];
+    const deck=spectator&&side==='cpu'?watchConfig.cpu.deck:currentDeck;
     const keywordHelp = card.keywords.map(key => `<p><strong>${KEYWORDS[key].name}</strong>：${KEYWORDS[key].description}</p>`).join('');
-    $('card-detail').innerHTML = `${cardMarkup(card, 'detail', 'detail')}<div class="detail-abilities"><p>${card.description}</p>${keywordHelp}</div><p class="detail-flavor">「${card.flavor}」</p><p class="detail-id">${card.id} · 対戦中のデッキ内 ${currentDeck.cards.filter(item => item === id).length}枚 · ${card.type==='weapon'?'武器':card.type === 'spell' ? '呪文' : 'ユニット'}</p>`;
+    $('card-detail').innerHTML = `${cardMarkup(card, 'detail', 'detail')}<div class="detail-abilities"><p>${card.description}</p>${keywordHelp}</div><p class="detail-flavor">「${card.flavor}」</p><p class="detail-id">${card.id} · ${spectator?side==='cpu'?'CPU Bの':'CPU Aの':'対戦中の'}デッキ内 ${deck.cards.filter(item => item === id).length}枚 · ${card.type==='weapon'?'武器':card.type === 'spell' ? '呪文' : 'ユニット'}</p>`;
     $('detail-dialog').showModal();
   }
   $('enemy-portrait').innerHTML = portrait(true); $('player-portrait').innerHTML = portrait(false);
@@ -411,8 +418,7 @@
   $('collection-count').textContent = `THE COLLECTION · ${CARDS.length} CARDS`;
   $('hand').addEventListener('click', event => {
     const element = event.target.closest('[data-card]'); if (!element) return;
-    if(inspecting){showDetail(element.dataset.cardId);return;}
-    if(spectator)return;
+    if(inspecting||spectator){showDetail(element.dataset.cardId);return;}
     if (busy) { message('行動の演出が終わるまでお待ちください。', true); return; }
     const uid = element.dataset.card;
     if (pendingCard === uid) { cancelSelection(); return; }
@@ -437,7 +443,7 @@
     if (selected) findUnit(selected)?.focus({ preventScroll: true });
   });
   $('inspect-toggle').addEventListener('click',()=>{inspecting=!inspecting;selected=null;pendingCard=null;pendingPower=false;render();message(inspecting?'詳細モード：カードやユニットをタップ。対戦操作へ戻るには下のボタンを押してください。':'対戦操作へ戻りました。');});
-  $('enemy-hand').addEventListener('click',event=>{const c=event.target.closest('[data-card-id]');if(inspecting&&spectator&&c)showDetail(c.dataset.cardId);});
+  for(const id of ['enemy-hand','watch-top-hand'])$(id).addEventListener('click',event=>{const c=event.target.closest('[data-card-id]');if(spectator&&c)showDetail(c.dataset.cardId,'cpu');});
   $('weapon-attack').addEventListener('click',()=>{if(!playerTurn()||canWeaponAttack(state,'player'))return;pendingCard=null;pendingPower=false;selected=selected==='player-hero'?null:'player-hero';render();message(selected?'武器で攻撃：光る敵を選んでください。ユニットからは反撃を受けます。':'武器の選択を解除しました。');});
   $('enemy-hero').addEventListener('click', () => chooseTarget('cpu-hero'));
   $('player-hero').addEventListener('click', () => chooseTarget('player-hero'));

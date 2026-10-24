@@ -6,27 +6,27 @@
   <meta name="theme-color" content="#102b2b">
   <meta name="description" content="勝ち星、いただきます。星と精霊の洒落が効いた、オフラインで遊べるターン制カードゲーム。">
   <title>星勘定の決闘 | HOSHIKANJO</title>
-  <link rel="icon" href="assets/favicon.svg?v=2.1.1-36309c178097" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon.svg?v=2.1.2-36309c178097" type="image/svg+xml">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="星勘定">
-  <link rel="manifest" href="manifest.webmanifest?v=2.1.1-871f04ed9ad1">
-  <link rel="stylesheet" href="styles.css?v=2.1.1-d0ebe86aeebd">
-  <script defer src="js/cards.js?v=2.1.1-c1095abc8a2c"></script>
-  <script defer src="js/strategy.js?v=2.1.1-23e13302ad16"></script>
-  <script defer src="js/heroes.js?v=2.1.1-e0ec92a3efbd"></script>
-  <script defer src="js/decks.js?v=2.1.1-e193b59a7436"></script>
-  <script defer src="js/arena.js?v=2.1.1-4752093f7bce"></script>
-  <script defer src="js/effects.js?v=2.1.1-9407767addfa"></script>
-  <script defer src="js/engine.js?v=2.1.1-5ab255b7799d"></script>
-  <script defer src="js/ai.js?v=2.1.1-2d925f32ae9f"></script>
-  <script defer src="js/art.js?v=2.1.1-54ce52ce5094"></script>
-  <script defer src="js/traits.js?v=2.1.1-a11a8cc20e8a"></script>
-  <script defer src="js/playback.js?v=2.1.1-e41084e7ac26"></script>
-  <script defer src="js/review.js?v=2.1.1-1f4cd7396430"></script>
-  <script defer src="js/power-effects.js?v=2.1.1-10b2b14c74b2"></script>
-  <script defer src="js/deck-editor.js?v=2.1.1-b8cb17af545b"></script>
-  <script defer src="js/arena-editor.js?v=2.1.1-b43174a2fcff"></script>
-  <script defer src="js/app.js?v=2.1.1-3512f1c0e441"></script>
+  <link rel="manifest" href="manifest.webmanifest?v=2.1.2-871f04ed9ad1">
+  <link rel="stylesheet" href="styles.css?v=2.1.2-535b8cd77ab2">
+  <script defer src="js/cards.js?v=2.1.2-c1095abc8a2c"></script>
+  <script defer src="js/strategy.js?v=2.1.2-23e13302ad16"></script>
+  <script defer src="js/heroes.js?v=2.1.2-e0ec92a3efbd"></script>
+  <script defer src="js/decks.js?v=2.1.2-e193b59a7436"></script>
+  <script defer src="js/arena.js?v=2.1.2-4752093f7bce"></script>
+  <script defer src="js/effects.js?v=2.1.2-9407767addfa"></script>
+  <script defer src="js/engine.js?v=2.1.2-5ab255b7799d"></script>
+  <script defer src="js/ai.js?v=2.1.2-2d925f32ae9f"></script>
+  <script defer src="js/art.js?v=2.1.2-54ce52ce5094"></script>
+  <script defer src="js/traits.js?v=2.1.2-a11a8cc20e8a"></script>
+  <script defer src="js/playback.js?v=2.1.2-e41084e7ac26"></script>
+  <script defer src="js/review.js?v=2.1.2-1f4cd7396430"></script>
+  <script defer src="js/power-effects.js?v=2.1.2-10b2b14c74b2"></script>
+  <script defer src="js/deck-editor.js?v=2.1.2-b8cb17af545b"></script>
+  <script defer src="js/arena-editor.js?v=2.1.2-b43174a2fcff"></script>
+  <script defer src="js/app.js?v=2.1.2-d070df43572e"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -43,6 +43,7 @@
           <div class="enemy-hand" id="enemy-hand" aria-label="CPUの手札"></div>
           <div class="enemy-resources" id="cpu-resources"></div>
         </div>
+        <div id="watch-top-hand-zone" class="watch-top-hand-zone" hidden><div class="hand-label"><span>CPU B · HAND</span><span id="watch-top-hand-count"></span></div><div id="watch-top-hand" class="watch-top-hand" role="group" aria-label="CPU Bの手札"></div></div>
         <button class="hero enemy-hero" id="enemy-hero" data-target="hero" aria-label="CPUのヒーローに攻撃"><span class="hero-aura"></span><span class="hero-portrait" id="enemy-portrait"></span><span class="hero-hp" id="cpu-hp">25</span><span class="hero-name" id="cpu-hero-name">星よみ経理</span></button>
         <span id="cpu-weapon" class="equipped-weapon" hidden></span>
         <div class="field enemy-field" id="enemy-field" role="group" aria-label="CPUのユニット"></div>

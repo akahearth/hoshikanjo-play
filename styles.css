@@ -2192,6 +2192,7 @@ button { touch-action:manipulation; }
 
 /* 対戦盤面はスマホの可視領域に収め、補助情報は引き出しへ。 */
 .mobile-control { display:none; }
+.watch-top-hand-zone { display:none; }
 #watch-hands-panel { display:none; }
 .opening-difficulty { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:12px 0; color:var(--gold); }
 .opening-difficulty select { color:var(--text); background:#173229; border:1px solid #91a37166; border-radius:4px; padding:8px; }
@@ -2280,6 +2281,17 @@ button { touch-action:manipulation; }
  .touch-toolbar button { font-size:11px; min-height:44px; padding:4px; }
  .spectating .opponent-zone { flex-wrap:nowrap; min-height:0; }
  .spectating .enemy-hand { display:none; }
+ .spectating .arena { grid-template-rows:20px 54px 88px minmax(50px,1fr) 24px minmax(50px,1fr) 46px 42px 126px; grid-template-areas:'top top top' 'enemyHeader enemyHeader enemyHeader' 'enemyHand enemyHand enemyHand' 'enemyField enemyField enemyField' 'divider divider divider' 'playerField playerField playerField' 'playerBar playerBar playerBar' 'weapon power power' 'hand hand hand'; }
+ .spectating .watch-top-hand-zone { display:block; grid-area:enemyHand; min-width:0; min-height:0; overflow:hidden; padding:0 5px; border-bottom:1px solid var(--line); }
+ .watch-top-hand { display:flex; gap:6px; height:calc(100% - 14px); overflow-x:auto; overflow-y:hidden; padding:2px 2px 4px; -webkit-overflow-scrolling:touch; }
+ .watch-top-hand .card,.watch-top-hand .card.expansion-card { flex:0 0 92px; width:92px; height:100%; margin:0; transform:none; }
+ .watch-top-hand .card .card-art,.watch-top-hand .card.expansion-card .card-art { height:28px; }
+ .watch-top-hand .card .card-name { font-size:10px; line-height:18px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+ .watch-top-hand .card .card-description,.watch-top-hand .card .card-tribe,.watch-top-hand .card .rarity-label { display:none; }
+ .watch-top-hand .card .mana-cost { width:22px; height:22px; font-size:15px; top:1px; left:1px; }
+ .watch-top-hand .card .stat { width:19px; height:19px; font-size:12px; bottom:1px; }
+ .watch-top-hand .card .spell-seal,.watch-top-hand .card .weapon-seal { font-size:8px; bottom:2px; }
+ .watch-top-hand .hand-empty { font-size:11px; margin:8px; }
  .info-open #watch-hands-panel { display:block; }
  #watch-cpu-hand { padding-left:18px; font-size:12px; }
  #watch-cpu-hand p { font-size:11px; line-height:1.6; }
@@ -2298,6 +2310,8 @@ button { touch-action:manipulation; }
  .hero-power-bar button,#weapon-attack { height:36px; min-height:36px; }
  .hand .card .card-art,.hand .card.expansion-card .card-art { height:30px; }
  .hand .card .card-description { max-height:20px; font-size:8px; }
+ .spectating .arena { grid-template-rows:18px 48px 76px minmax(40px,1fr) 22px minmax(40px,1fr) 42px 38px 102px; }
+ .watch-top-hand .card .card-art,.watch-top-hand .card.expansion-card .card-art { height:18px; }
 }
 @media(max-width:950px) and (orientation:landscape) and (max-height:550px) {
  .arena { grid-template-columns:minmax(0,1fr) 150px; grid-template-rows:18px 44px minmax(44px,1fr) 22px minmax(44px,1fr) 42px; grid-template-areas:'top top' 'enemyHeader hand' 'enemyField hand' 'divider hand' 'playerField hand' 'playerBar power'; }
@@ -2311,4 +2325,12 @@ button { touch-action:manipulation; }
  .player-bar { padding-right:0; }
  .hero-power-bar small { max-width:105px; }
  .info-open .sidebar { left:20%; right:20%; }
+ .spectating .arena { grid-template-columns:minmax(0,1fr) 150px; grid-template-rows:18px 44px minmax(44px,1fr) 22px minmax(44px,1fr) 42px; grid-template-areas:'top top' 'enemyHeader enemyHand' 'enemyField enemyHand' 'divider hand' 'playerField hand' 'playerBar power'; }
+ .spectating .watch-top-hand-zone { border-left:1px solid var(--line); }
+ .spectating .watch-top-hand .card { max-height:90px; flex-basis:126px; width:126px; }
+ .spectating .watch-top-hand .card .card-art { display:block; height:40px; }
+ .spectating .watch-top-hand .card .card-name { margin-left:0; font-size:10px; line-height:18px; }
+ .spectating .hand .card { height:100%; max-height:130px; }
+ .spectating .hand .card .card-art { height:24px; }
+ .spectating .hand .card .card-description { display:none; }
 }
