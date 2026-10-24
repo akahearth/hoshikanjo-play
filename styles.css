@@ -2190,6 +2190,58 @@ button { touch-action:manipulation; }
 }
 .card.inspectable { cursor:help; outline:1px dashed #dfcb91; }
 
+/* 起動時は対戦を作らず、この入口から遊び方を選ぶ。 */
+.start-screen { max-width:1100px; margin:0 auto; height:100vh; height:100dvh; overflow-y:auto; padding:32px; display:flex; flex-direction:column; gap:18px; }
+.start-screen>* { flex-shrink:0; }
+.start-heading { text-align:center; margin-top:auto; }
+.start-mark { display:block; color:var(--gold); font:58px/1 Georgia; text-shadow:0 0 32px #bdcda84d; }
+.start-heading h1 { font:38px/1.4 var(--serif); color:#eee5c4; letter-spacing:.12em; margin:7px 0; }
+.start-heading h1:focus { outline:none; }
+.start-heading p { font-size:13px; line-height:1.8; color:#b8cabc; margin:9px 0 0; }
+.start-difficulty { margin:0; justify-content:center; }
+.start-choices { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.start-card { display:flex; text-align:left; gap:13px; align-items:center; min-width:0; min-height:168px; padding:20px 16px; border:1px solid #93ac8573; border-radius:12px; background:linear-gradient(145deg,#2c4c3f,#142e2b); box-shadow:0 12px 28px #061c1c66; }
+.start-card:hover { border-color:var(--gold); background:linear-gradient(145deg,#3c5941,#1a3930); }
+.start-card>span:nth-child(2) { min-width:0; flex:1; }
+.start-icon { font:33px/1 Georgia; color:var(--gold); }
+.start-card strong { display:block; font:20px/1.6 var(--serif); color:#f0dfb4; }
+.start-card small { display:block; font-size:11px; line-height:1.8; color:#c4d3c1; margin-top:5px; }
+.start-card em { display:block; color:#90ad9a; font-size:10px; line-height:1.7; font-style:normal; margin-top:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.start-card b { color:var(--gold); font-weight:normal; }
+.start-tools { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+.start-tools button { min-height:44px; padding:8px 4px; }
+.start-resume-row { display:flex; align-items:center; flex-wrap:wrap; justify-content:center; gap:8px 16px; padding:12px; border:1px solid #d5b97666; border-radius:8px; background:#233e32; }
+.start-resume-row p { font-size:11px; color:#beccb4; margin:0; }
+.start-footnote { display:flex; justify-content:space-between; flex-wrap:wrap; gap:5px; font-size:10px; line-height:1.7; color:var(--muted); margin:0 0 auto; }
+@media(max-width:650px) {
+ .start-screen { padding:max(16px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); gap:12px; }
+ .start-heading { display:grid; grid-template-columns:34px 1fr; text-align:left; column-gap:8px; }
+ .start-mark { grid-row:1/3; font-size:38px; align-self:center; }
+ .start-heading .eyebrow { font-size:8px; }
+ .start-heading h1 { font-size:26px; letter-spacing:.07em; margin:1px 0; }
+ .start-heading p { grid-column:1/-1; font-size:12px; line-height:1.6; margin:8px 0 0; }
+ .start-choices { grid-template-columns:1fr; gap:8px; }
+ .start-card { min-height:84px; padding:12px 14px; }
+ .start-card strong { font-size:18px; }
+ .start-card small { margin-top:0; }
+ .start-card em { margin-top:1px; }
+ .start-tools button { font-size:11px; }
+ .start-difficulty { justify-content:flex-start; gap:6px; font-size:12px; }
+ .start-difficulty small { font-size:10px; }
+ .start-footnote { font-size:9px; }
+ .opening-actions { flex-wrap:wrap; }
+}
+@media(max-height:550px) and (min-width:651px) {
+ .start-screen { padding:14px 20px; gap:10px; }
+ .start-heading { display:grid; grid-template-columns:44px 1fr; text-align:left; column-gap:10px; }
+ .start-mark { grid-row:1/3; font-size:40px; }
+ .start-heading h1 { font-size:24px; margin:0; }
+ .start-heading p { display:none; }
+ .start-card { min-height:108px; padding:12px; }
+ .start-card strong { font-size:17px; }
+ .start-card em { margin-top:2px; }
+}
+
 /* 対戦盤面はスマホの可視領域に収め、補助情報は引き出しへ。 */
 .mobile-control { display:none; }
 .watch-top-hand-zone { display:none; }

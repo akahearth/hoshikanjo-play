@@ -10,6 +10,7 @@
   const { createRecording, renderThought, createViewer } = SeikanReview;
   const $ = id => document.getElementById(id);
   let state;
+  let atStart=true,menuWasPaused=false;
   let recording=null;
   let spectator=false;
   let watchPausedCpu=false;
@@ -46,9 +47,9 @@
   let resultShown = false;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const powerEffects = SeikanPowerEffects.createPowerEffects({ document, window, resolveElement:entityElement, reducedMotion });
-  const automated = () => spectator || state.active==='cpu';
+  const automated = () => !atStart&&(spectator || state?.active==='cpu');
   const displayText = text => spectator ? text.replaceAll('あなた','CPU A').replaceAll('星よみ経理','CPU B') : text;
-  const playerTurn = () => !spectator && state.active === 'player' && state.status === 'playing' && !state.choice && !busy;
+  const playerTurn = () => !atStart && !spectator && state?.active === 'player' && state.status === 'playing' && !state.choice && !busy;
   const pace = () => PACES[paceKey];
   function isTarget(id) {
     if (!playerTurn()) return false;
@@ -82,6 +83,7 @@
   }
   function message(text, isError = false) { $('action-message').textContent = text; $('action-message').classList.toggle('error', isError); }
   function render() {
+    if(!state)return;
     document.body.classList.toggle('spectating',spectator);
     $('watch-exit').hidden=!spectator;
     $('duel-mode').textContent=spectator?`◉ CPU vs CPU · ${state.mode==='arena'?'アリーナ観戦':'観戦'}`:'◉ CPU DUEL';
@@ -162,14 +164,14 @@
     if(spectator)$('end-turn').textContent=state.status==='finished'?'観戦終了':'CPU同士を観戦中';
     $('battle-log').innerHTML = [...state.log].reverse().slice(0, 25).map(entry => `<li><time>${String(Math.ceil(entry.turn / 2)).padStart(2, '0')}</time><span>${displayText(entry.message)}</span></li>`).join('');
     updatePlaybackControls();
-    const choosing=!spectator&&state.choice?.side==='player'&&!busy&&state.status==='playing';
+    const choosing=!atStart&&!spectator&&state.choice?.side==='player'&&!busy&&state.status==='playing';
     if(choosing){
       $('discover-offers').innerHTML=state.choice.options.map(item=>cardMarkup(BY_ID[item.cardId],item.uid,'discover').replace('<button ',`<button data-discover="${item.uid}" `)).join('');
       if(!$('discover-dialog').open)$('discover-dialog').showModal();
     } else if($('discover-dialog').open)$('discover-dialog').close();
   }
   function showResult() {
-    if (state.status === 'finished' && !resultShown) {
+    if (!atStart && state.status === 'finished' && !resultShown) {
       resultShown = true;
       const won = state.winner === 'player'; const draw = state.winner === 'draw';
       $('result-english').textContent = draw ? 'DRAW' : won ? 'VICTORY' : 'DEFEAT';
@@ -322,6 +324,8 @@
     } finally { if (epoch === gameEpoch) { cpuRunning = false; updatePlaybackControls(); } }
   }
   function newGame() {
+    atStart=false;menuWasPaused=false;
+    $('start-screen').hidden=true;$('game-shell').hidden=false;$('touch-toolbar').hidden=false;document.body.classList.remove('at-start');
     document.body.classList.remove('menu-open','info-open');
     $('mobile-menu').setAttribute('aria-expanded','false');$('mobile-info').setAttribute('aria-expanded','false');
     resettingMatch = true;
@@ -476,32 +480,36 @@
     $('cpu-setting-description').textContent = DIFFICULTIES[cpuPreference.difficulty].description + ' ' + (cpuPreference.style === 'auto' ? '戦術は対戦ごとに選びます。' : STYLES[cpuPreference.style].description);
   }
   $('cpu-difficulty').value = cpuPreference.difficulty; $('cpu-style').value = cpuPreference.style;
-  for(const id of ['mulligan-difficulty','draft-difficulty']){
+  for(const id of ['start-difficulty','mulligan-difficulty','draft-difficulty']){
     $(id).value=cpuPreference.difficulty;
     $(id).addEventListener('change',()=>{
       cpuPreference={...cpuPreference,difficulty:normalizeOptions({difficulty:$(id).value}).difficulty};
-      for(const key of ['cpu-difficulty','mulligan-difficulty','draft-difficulty'])$(key).value=cpuPreference.difficulty;
-      if(state.status==='mulligan')matchCpu={...matchCpu,difficulty:cpuPreference.difficulty};
+      for(const key of ['cpu-difficulty','start-difficulty','mulligan-difficulty','draft-difficulty'])$(key).value=cpuPreference.difficulty;
+      if(!atStart&&state?.status==='mulligan')matchCpu={...matchCpu,difficulty:cpuPreference.difficulty};
       try{localStorage.setItem('seikan-cpu-settings-v1',JSON.stringify(cpuPreference));}catch{}
       describeCpuSettings();render();
     });
   }
   for (const id of ['cpu-difficulty', 'cpu-style']) $(id).addEventListener('change', () => {
     cpuPreference = { difficulty: $('cpu-difficulty').value, style: $('cpu-style').value };
-    for(const id of ['mulligan-difficulty','draft-difficulty'])$(id).value=cpuPreference.difficulty;
+    for(const id of ['start-difficulty','mulligan-difficulty','draft-difficulty'])$(id).value=cpuPreference.difficulty;
     try { localStorage.setItem('seikan-cpu-settings-v1', JSON.stringify(cpuPreference)); } catch { /* このページでは選択を維持する。 */ }
     describeCpuSettings();
   });
   describeCpuSettings();
-  $('cpu-settings-button').addEventListener('click', () => {
-    settingsPausedCpu = state.active === 'cpu' && state.status === 'playing' && !playback.isPaused();
+  function openCpuSettings() {
+    settingsPausedCpu = !atStart&&state?.active === 'cpu' && state.status === 'playing' && !playback.isPaused();
     if (settingsPausedCpu) { playback.pause(); updatePlaybackControls(); }
+    $('cpu-settings-back').textContent=atStart?'スタートメニューへ':'対戦に戻る';
+    $('cpu-new-game').textContent=atStart?'この設定で通常対戦を開始 →':'この設定で新しい対戦 ↻';
+    if(!state)$('cpu-match-status').textContent='まだ対戦は始まっていません。';
     $('cpu-dialog').showModal();
-  });
+  }
+  $('cpu-settings-button').addEventListener('click',openCpuSettings);
   $('cpu-dialog').addEventListener('close', () => {
-    if (settingsPausedCpu) { settingsPausedCpu = false; playback.resume(); updatePlaybackControls(); }
+    if (settingsPausedCpu) { settingsPausedCpu = false; if(!atStart)playback.resume(); updatePlaybackControls(); }
   });
-  $('cpu-new-game').addEventListener('click', newGame);
+  $('cpu-new-game').addEventListener('click',()=>atStart?newConstructedGame():newGame());
   $('restart-button').addEventListener('click', newGame); $('mobile-restart').addEventListener('click',newGame); $('rematch-button').addEventListener('click', newGame);
   $('help-button').addEventListener('click', () => $('help-dialog').showModal());
   function closeMobilePanels(){document.body.classList.remove('menu-open','info-open');$('mobile-menu').setAttribute('aria-expanded','false');$('mobile-info').setAttribute('aria-expanded','false');}
@@ -518,8 +526,8 @@
     event.preventDefault(); showDetail(card.dataset.cardId);
   });
   const editor = SeikanDeckEditor.createEditor({ cardMarkup, onStart: newConstructedGame, onDetail: showDetail,
-    onOpen() { editorPausedCpu = state.active === 'cpu' && state.status === 'playing' && !playback.isPaused(); if (editorPausedCpu) { playback.pause(); updatePlaybackControls(); } },
-    onClose() { if (editorPausedCpu) { editorPausedCpu = false; playback.resume(); updatePlaybackControls(); } }
+    onOpen() { editorPausedCpu = !atStart&&state?.active === 'cpu' && state.status === 'playing' && !playback.isPaused(); if (editorPausedCpu) { playback.pause(); updatePlaybackControls(); } },
+    onClose() { if (editorPausedCpu) { editorPausedCpu = false; if(!atStart)playback.resume(); updatePlaybackControls(); }if(atStart)updateStartMenu(); }
   });
   const arena = SeikanArenaEditor.createEditor({ cardMarkup, style:()=>cpuPreference.style,
     onStart(draft) {
@@ -528,8 +536,8 @@
       newGame();
     },
     onConstructed:newConstructedGame,
-    onOpen() { $('draft-difficulty').value=cpuPreference.difficulty;arenaPausedCpu=state.active==='cpu'&&state.status==='playing'&&!playback.isPaused();if(arenaPausedCpu){playback.pause();updatePlaybackControls();} },
-    onClose() { if(arenaPausedCpu){arenaPausedCpu=false;playback.resume();updatePlaybackControls();}if(!resettingMatch&&state.status==='mulligan')openMulligan(); }
+    onOpen() { $('draft-difficulty').value=cpuPreference.difficulty;arenaPausedCpu=!atStart&&state?.active==='cpu'&&state.status==='playing'&&!playback.isPaused();if(arenaPausedCpu){playback.pause();updatePlaybackControls();} },
+    onClose() { if(arenaPausedCpu){arenaPausedCpu=false;if(!atStart)playback.resume();updatePlaybackControls();}if(!atStart&&!resettingMatch&&state?.status==='mulligan')openMulligan(); }
   });
   $('arena-button').addEventListener('click',()=>arena.open());
   $('mulligan-arena').addEventListener('click',()=>{$('mulligan-dialog').close();arena.open();});
@@ -542,14 +550,14 @@
     $('watch-'+side+'-deck').value=SeikanDecks.PRESETS[side==='player'?0:1].id;
   }
   function openWatch(){
-    watchOpening=state.status==='mulligan';if($('mulligan-dialog').open)$('mulligan-dialog').close();
-    watchPausedCpu=state.status==='playing'&&automated()&&!playback.isPaused();if(watchPausedCpu){playback.pause();updatePlaybackControls();}
+    watchOpening=!atStart&&state?.status==='mulligan';if($('mulligan-dialog').open)$('mulligan-dialog').close();
+    watchPausedCpu=state?.status==='playing'&&automated()&&!playback.isPaused();if(watchPausedCpu){playback.pause();updatePlaybackControls();}
     $('watch-dialog').showModal();
   }
   $('watch-button').addEventListener('click',openWatch);$('mulligan-watch').addEventListener('click',openWatch);
   $('watch-dialog').addEventListener('close',()=>{
-    if(watchPausedCpu){watchPausedCpu=false;playback.resume();updatePlaybackControls();}
-    if(watchOpening&&!resettingMatch&&state.status==='mulligan')openMulligan();watchOpening=false;
+    if(watchPausedCpu){watchPausedCpu=false;if(!atStart)playback.resume();updatePlaybackControls();}
+    if(watchOpening&&!atStart&&!resettingMatch&&state?.status==='mulligan')openMulligan();watchOpening=false;
   });
   $('watch-mode').value='constructed';
   $('watch-mode').addEventListener('change',()=>{
@@ -571,5 +579,39 @@
     spectator=true;arenaMatch=null;newGame();
   });
   $('watch-exit').addEventListener('click',newConstructedGame);
-  newGame();
+  function updateStartMenu(){
+    const deck=editor.activeDeck();if(!state)currentDeck=deck;
+    $('start-deck-name').textContent=deck.name;
+    $('start-difficulty').value=cpuPreference.difficulty;
+    $('start-resume-row').hidden=!state;
+    $('start-resume').textContent=state?.status==='mulligan'?'初手交換に戻る →':state?.status==='finished'?'直前の対戦に戻る →':'対戦を続ける →';
+    $('start-resume-note').textContent=state?`${spectator?'CPU同士の観戦':state.mode==='arena'?'アリーナ':'通常対戦'} · ${state.status==='mulligan'?'初手交換中':`ラウンド ${Math.ceil(state.turn/2)}`}`:'';
+  }
+  function openStartMenu(){
+    if(!atStart){menuWasPaused=playback.isPaused();playback.pause();}
+    atStart=true;closeMobilePanels();viewer.close();
+    document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());
+    $('game-shell').hidden=true;$('touch-toolbar').hidden=true;$('start-screen').hidden=false;document.body.classList.add('at-start');
+    $('start-screen').scrollTop=0;
+    updateStartMenu();if(state)updatePlaybackControls();
+    $('start-title').focus({preventScroll:true});
+  }
+  function resumeFromStart(){
+    if(!state)return;
+    atStart=false;$('start-screen').hidden=true;$('game-shell').hidden=false;$('touch-toolbar').hidden=false;document.body.classList.remove('at-start');
+    if(!menuWasPaused)playback.resume();render();
+    if(state.status==='mulligan')openMulligan();
+    else if(!busy&&automated()&&!cpuRunning)void scheduleCpu();
+  }
+  $('start-constructed').addEventListener('click',newConstructedGame);
+  $('start-arena').addEventListener('click',()=>arena.open());
+  $('start-watch').addEventListener('click',openWatch);
+  $('start-deck').addEventListener('click',()=>editor.open());
+  $('start-collection').addEventListener('click',()=>$('collection-dialog').showModal());
+  $('start-help').addEventListener('click',()=>$('help-dialog').showModal());
+  $('start-settings').addEventListener('click',openCpuSettings);
+  $('start-resume').addEventListener('click',resumeFromStart);
+  for(const id of ['home-button','mulligan-home'])$(id).addEventListener('click',openStartMenu);
+  $('home-logo').addEventListener('click',event=>{event.preventDefault();openStartMenu();});
+  openStartMenu();
 })();
