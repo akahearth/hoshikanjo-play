@@ -437,7 +437,6 @@
     if (selected) findUnit(selected)?.focus({ preventScroll: true });
   });
   $('inspect-toggle').addEventListener('click',()=>{inspecting=!inspecting;selected=null;pendingCard=null;pendingPower=false;render();message(inspecting?'詳細モード：カードやユニットをタップ。対戦操作へ戻るには下のボタンを押してください。':'対戦操作へ戻りました。');});
-  $('touch-end-turn').addEventListener('click',()=>{if(playerTurn())void dispatch({type:'end',actor:'player'});});
   $('enemy-hand').addEventListener('click',event=>{const c=event.target.closest('[data-card-id]');if(inspecting&&spectator&&c)showDetail(c.dataset.cardId);});
   $('weapon-attack').addEventListener('click',()=>{if(!playerTurn()||canWeaponAttack(state,'player'))return;pendingCard=null;pendingPower=false;selected=selected==='player-hero'?null:'player-hero';render();message(selected?'武器で攻撃：光る敵を選んでください。ユニットからは反撃を受けます。':'武器の選択を解除しました。');});
   $('enemy-hero').addEventListener('click', () => chooseTarget('cpu-hero'));
@@ -449,10 +448,12 @@
     selected = null; pendingCard = null; pendingPower = true; render();
     message(`「${BY_POWER[state.player.heroPower].name}」：光る対象を選んでください。選ぶまでマナは消費されません。`);
   });
-  $('end-turn').addEventListener('click', async () => {
+  async function endPlayerTurn() {
+    if(!playerTurn())return;
     const epoch = gameEpoch;
     if (await dispatch({ type: 'end', actor: 'player' }) && epoch === gameEpoch) { cpuSteps = 0; void scheduleCpu(epoch); }
-  });
+  }
+  for(const id of ['end-turn','touch-end-turn'])$(id).addEventListener('click',endPlayerTurn);
   $('playback-speed').value = paceKey;
   $('playback-speed').addEventListener('change', event => {
     if (!PACES[event.target.value]) return;
