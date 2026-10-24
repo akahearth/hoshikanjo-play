@@ -132,7 +132,7 @@
         if (!action) break;
         face = step(face, action, budget, stats);
         if (!face) break;
-        if (stats.nodes % 32 === 0) yield;
+        if (stats.nodes % 32 === 0) yield stats;
         if (face.winner === enemy) return -100000;
         worst = Math.min(worst, evaluate(face, side, style));
       }
@@ -145,7 +145,7 @@
         for (const action of legalActions(node.state, enemy).filter(a => a.type !== 'play')) {
           const state = step(node.state, action, budget, stats);
           if (!state) break;
-          if (stats.nodes % 32 === 0) yield;
+          if (stats.nodes % 32 === 0) yield stats;
           const score = evaluate(state, side, style);
           if (state.winner === enemy) return -100000;
           worst = Math.min(worst, score);
@@ -220,19 +220,20 @@
     const budget = { remaining: config.ownNodes }; const baseline = evaluate(state, side, style);
     if(stats.trace)stats.trace.baseline=baseline;
     const end = { type: 'end', actor: side };
+    stats.action=end;
     if (settings.difficulty === 'easy') {
       if(stats.trace)stats.trace.method='immediate';
       let score = baseline; stats.action = end;
       for (const action of actionsFor(state)) {
         const next = step(state, action, budget, stats); if (!next) break;
-        if (stats.nodes % 32 === 0) yield;
+        if (stats.nodes % 32 === 0) yield stats;
         if (next.winner === side && !next.uncertain) { record(action,100000,{winning:true});stats.action = action; return stats; }
         let value = evaluate(next, side, style);
         // 入門も一時マナを「直後の1手」とセットで判断する。通常の探索上限内で行う。
         if (action.type === 'play' && BY_ID[state[side].hand.find(card=>card.uid===action.card).cardId].effects.some(effect=>effect.type==='mana')) {
           for (const follow of actionsFor(next).filter(item=>item.type!=='end')) {
             const future=step(next,follow,budget,stats);if(!future)break;
-            if(stats.nodes%32===0)yield;
+            if(stats.nodes%32===0)yield stats;
             if(future.winner===side&&!future.uncertain){record(action,100000,{winning:true});stats.action=action;return stats;}
             value=Math.max(value,evaluate(future,side,style));
           }
@@ -245,6 +246,7 @@
       return drawFirst();
     }
     let frontier = [{ state, first: null, score: baseline, quality: 0, depth: 0 }];
+    let partialScore=baseline;
     const endings = [];
     for (let depth = 0; depth < config.depth && frontier.length; depth++) {
       const next = [];
@@ -253,8 +255,10 @@
           // 最後に候補をターン終了まで進める分を確保する。
           if (budget.remaining <= config.width) break;
           const child = step(node.state, action, budget, stats); if (!child) break;
-          if (stats.nodes % 32 === 0) yield;
           const score = evaluate(child, side, style);
+          // 時間切れでも、実際に評価済みの合法な一手を返せるよう保持する。
+          if(depth===0&&score>partialScore){partialScore=score;stats.action=action;}
+          if (stats.nodes % 32 === 0) yield stats;
           const entry = { state: child, first: node.first || action, score, depth: node.depth + 1, quality: node.quality + score - baseline };
           if (child.winner === side && !child.uncertain) { if(stats.trace)stats.trace.method='lethal';record(entry.first,100000,{winning:true,depth:entry.depth});stats.action = entry.first; return stats; }
           if (action.type === 'end' || child.status === 'finished') endings.push(entry); else next.push(entry);
@@ -265,7 +269,7 @@
     }
     for (const node of frontier) {
       const child = step(node.state, end, budget, stats); if (!child) break;
-      if (stats.nodes % 32 === 0) yield;
+      if (stats.nodes % 32 === 0) yield stats;
       endings.push({ ...node, state: child, first: node.first || end, score: evaluate(child, side, style) });
     }
     const candidates = uniqueBest(endings, config.replies);
@@ -278,7 +282,7 @@
       const score = yield* forecast(candidate.state, side, style, config, stats);
       const ranked = { ...candidate, positionScore: candidate.score, score };
       record(candidate.first,score,{positionScore:candidate.score,depth:candidate.depth});
-      if (!best || ranked.score > best.score || (ranked.score === best.score && (ranked.positionScore > best.positionScore || (ranked.positionScore === best.positionScore && compare(ranked, best) < 0)))) best = ranked;
+      if (!best || ranked.score > best.score || (ranked.score === best.score && (ranked.positionScore > best.positionScore || (ranked.positionScore === best.positionScore && compare(ranked, best) < 0)))) {best = ranked;stats.action=best.first;}
     }
     stats.action = best?.first || end; return drawFirst();
   }
@@ -293,8 +297,19 @@
     const pause = options.yieldControl || (() => new Promise(resolve => setTimeout(() => resolve(true), 0)));
     if (cancelled() || await pause() === false || cancelled()) return null;
     const iterator = search(state, side, options);
+    const now=options.now||(()=>Date.now());
+    const maxTime=Number.isFinite(options.maxThinkMs)?Math.max(0,options.maxThinkMs):Infinity;
+    let elapsed=0;
     while (!cancelled()) {
-      const next = iterator.next(); if (next.done) { if(!cancelled())options.onAnalysis?.(next.value);return next.value.action; }
+      const started=now(),next = iterator.next();elapsed+=Math.max(0,now()-started);
+      if(cancelled())return null;
+      if (next.done) { options.onAnalysis?.(next.value);return next.value.action; }
+      if(elapsed>=maxTime&&next.value?.action){
+        const stats=next.value;stats.timeLimited=true;
+        // 未完了の反撃探索を完了済みとして扱わない。
+        if(stats.trace)stats.trace={method:'bounded',baseline:stats.trace.baseline,candidates:[]};
+        iterator.return();options.onAnalysis?.(stats);return stats.action;
+      }
       if (await pause() === false) return null;
     }
     return null;

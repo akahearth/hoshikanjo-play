@@ -44,7 +44,7 @@
   function thought(state,analysis){
     if(!analysis?.trace)return {headline:'CPUの評価記録はありません',details:'人の操作、初手交換、または行動上限によるターン終了です。',rows:[]};
     const t=analysis.trace,method=t.method;
-    const headline=t.ordering?'予定ユニットのマナを残して、先にドローします':method==='lethal'||t.candidates.some(c=>c.winning)?'探索した手順に確定勝利が見つかりました':method==='discover'?'発見の候補を比較しました':method==='immediate'?'現在の一手の結果を比較しました':'連続する行動と、公開盤面からの反撃を比較しました';
+    const headline=method==='bounded'?'思考時間の上限で探索を区切り、合法な一手で続行しました':t.ordering?'予定ユニットのマナを残して、先にドローします':method==='lethal'||t.candidates.some(c=>c.winning)?'探索した手順に確定勝利が見つかりました':method==='discover'?'発見の候補を比較しました':method==='immediate'?'現在の一手の結果を比較しました':'連続する行動と、公開盤面からの反撃を比較しました';
     const rows=t.candidates.slice().sort((a,b)=>b.score-a.score).map(c=>({label:actionName(state,c.action),score:c.score,positionScore:c.positionScore,depth:c.depth||1,chosen:JSON.stringify(c.action)===JSON.stringify(analysis.action),winning:!!c.winning}));
     if(t.ordering&&!rows.some(r=>r.chosen))rows.unshift({label:actionName(state,analysis.action),score:null,chosen:true,depth:1});
     const visible=rows.slice(0,12),chosen=rows.find(r=>r.chosen);if(chosen&&!visible.some(r=>r.chosen))visible.splice(11,1,chosen);

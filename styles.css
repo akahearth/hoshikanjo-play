@@ -2189,3 +2189,126 @@ button { touch-action:manipulation; }
  .opening-cards .card.expansion-card .card-art { height:105px; }
 }
 .card.inspectable { cursor:help; outline:1px dashed #dfcb91; }
+
+/* 対戦盤面はスマホの可視領域に収め、補助情報は引き出しへ。 */
+.mobile-control { display:none; }
+#watch-hands-panel { display:none; }
+.opening-difficulty { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:12px 0; color:var(--gold); }
+.opening-difficulty select { color:var(--text); background:#173229; border:1px solid #91a37166; border-radius:4px; padding:8px; }
+.opening-difficulty small { color:var(--muted); font-size:11px; }
+@media(max-width:950px) {
+ body { height:100vh; height:100dvh; min-height:0; overflow:hidden; }
+ .app-shell { height:100%; padding:env(safe-area-inset-top) max(6px,env(safe-area-inset-right)) calc(62px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left)); display:grid; grid-template-rows:44px minmax(0,1fr); }
+ .masthead { height:44px; min-height:0; padding:0 4px; flex-wrap:nowrap; gap:6px; }
+ .brand { gap:5px; }
+ .brand-title { font-size:17px; letter-spacing:.08em; }
+ .brand-mark { font-size:28px; }
+ .brand-sub,.header-caption,.page-footer { display:none; }
+ .mobile-control { display:block; min-height:40px; padding:6px 10px; background:#25483c; border-radius:5px; }
+ #mobile-menu { margin-left:auto; font-size:12px; }
+ .masthead nav { display:none; }
+ .menu-open .masthead nav { display:grid; grid-template-columns:1fr 1fr; position:fixed; z-index:40; top:calc(44px + env(safe-area-inset-top)); left:8px; right:8px; width:auto; margin:0; padding:12px; background:#102b2b; border:1px solid var(--gold); box-shadow:0 12px 30px #0008; }
+ .game-layout { display:block; margin:0; min-height:0; height:100%; }
+ .arena { height:100%; min-height:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:20px 54px minmax(50px,1fr) 24px minmax(50px,1fr) 46px 42px 126px; grid-template-areas:'top top top' 'enemyHeader enemyHeader enemyHeader' 'enemyField enemyField enemyField' 'divider divider divider' 'playerField playerField playerField' 'playerBar playerBar playerBar' 'weapon power power' 'hand hand hand'; }
+ .arena-topline { grid-area:top; height:20px; padding:0 8px; font-size:8px; }
+ .arena-topline>span:nth-child(2) { display:none; }
+ .opponent-zone { grid-area:enemyHeader; height:auto; min-height:0; padding:0 8px; align-items:center; }
+ .zone-info { max-width:32%; gap:2px; }
+ .zone-info .zone-name { display:none; }
+ .zone-info .eyebrow { font-size:8px; letter-spacing:0; }
+ .subtle { font-size:9px; }
+ .enemy-hand { display:none; }
+ .enemy-resources { max-width:38%; font-size:9px; line-height:1.35; }
+ .cpu-power { font-size:8px; line-height:1.2; }
+ .enemy-hero { grid-area:enemyHeader; justify-self:center; align-self:center; margin:0; width:44px; height:44px; z-index:2; }
+ .enemy-hero .hero-name { display:none; }
+ .hero-hp { width:24px; height:24px; font-size:14px; }
+ #cpu-weapon { grid-area:top; justify-self:center; align-self:center; min-height:18px; height:18px; margin:0; padding:1px 4px; max-width:62%; overflow:hidden; white-space:nowrap; font-size:9px; }
+ .enemy-field { grid-area:enemyField; }
+ .player-field { grid-area:playerField; }
+ .field { min-height:0; height:100%; padding:9px 6px 5px; gap:6px; align-items:center; }
+ .unit { flex:1 1 0; width:calc((100% - 24px)/5); min-width:0; max-width:104px; height:min(100%,112px); min-height:44px; }
+ .unit .card-art { height:calc(100% - 22px); }
+ .unit-name { font-size:9px; line-height:20px; }
+ .unit .stat { width:21px; height:21px; font-size:13px; bottom:20px; }
+ .unit .attack-stat { left:0; }
+ .unit .health-stat { right:0; }
+ .shield-label { top:-8px; font-size:7px; padding:1px 3px; }
+ .unit-abilities { bottom:23px; gap:1px; }
+ .ability-badge { font-size:7px; padding:1px 2px; }
+ .empty-slot { height:70%; max-height:80px; width:calc((100% - 24px)/5); }
+ .field-empty-hint { font-size:9px; }
+ .battle-divider { grid-area:divider; height:24px; margin:0 8px; gap:6px; }
+ .turn-banner { padding:4px 8px; font-size:10px; min-width:130px; }
+ .trait-legend,.arena-footer { display:none; }
+ .player-bar { grid-area:playerBar; height:46px; margin:0 8px; gap:8px; }
+ .player-identity { min-width:0; flex:1; gap:5px; }
+ .player-hero { width:36px; height:36px; flex:0 0 36px; }
+ .player-identity strong { font-size:10px; }
+ .player-identity .eyebrow { font-size:7px; letter-spacing:0; }
+ .mana-panel { flex:0 0 28%; width:auto; }
+ .mana-caption { margin-bottom:3px; }
+ .mana-caption strong { font-size:18px; }
+ .mana-crystals { gap:3px; }
+ .gem { width:6px; height:6px; }
+ .player-deck { min-width:35px; padding-left:5px; font-size:8px; }
+ .player-deck strong { font-size:12px; }
+ #weapon-attack { grid-area:weapon; min-height:40px; height:40px; margin:0 3px; padding:3px; font-size:9px; overflow:hidden; }
+ .hero-power-bar { grid-area:power; margin:0 5px; padding:0; display:block; min-width:0; }
+ .hero-power-bar>p { display:none; }
+ .hero-power-bar button { min-height:40px; height:40px; width:100%; min-width:0; padding:3px 7px; }
+ #hero-power { min-width:0; }
+ .hero-power-bar strong { font-size:11px; }
+ .hero-power-bar small { max-width:190px; font-size:8px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+ .hand-zone { grid-area:hand; padding:3px 5px 0; min-height:0; overflow:hidden; }
+ .hand-label { font-size:8px; margin-bottom:0; height:14px; }
+ .hand,.hand:has(.card:nth-child(7)) { height:calc(100% - 14px); min-height:0; padding:3px 2px 5px; margin:0; justify-content:flex-start; gap:6px; }
+ .hand .card,.hand .card.expansion-card { flex:0 0 102px; width:102px; height:100%; max-height:130px; margin:0; transform:none; }
+ .hand .card .card-art,.hand .card.expansion-card .card-art { height:40px; }
+ .hand .card .card-name { font-size:10px; line-height:18px; }
+ .hand .card .card-description,.hand .card.expansion-card .card-description { margin:3px 6px 20px; font-size:9px; line-height:1.3; max-height:24px; overflow:hidden; }
+ .hand .card .card-tribe { display:none; }
+ .hand .card .mana-cost { width:24px; height:24px; font-size:16px; top:1px; left:1px; }
+ .hand .card .stat { width:21px; height:21px; font-size:13px; bottom:1px; }
+ .hand .card .rarity-label { top:24px; font-size:7px; }
+ .hand .card .spell-seal,.hand .card .weapon-seal { font-size:8px; bottom:2px; }
+ .sidebar { display:none; }
+ .info-open .sidebar { display:flex; flex-direction:column; position:fixed; z-index:35; inset:calc(48px + env(safe-area-inset-top)) 8px calc(68px + env(safe-area-inset-bottom)); padding:12px; background:#102b2b; border:1px solid var(--gold); overflow:auto; gap:12px; }
+ .sidebar>* { flex-shrink:0; }
+ #mobile-info-close { align-self:flex-end; }
+ .touch-toolbar { gap:6px; padding:7px 6px calc(7px + env(safe-area-inset-bottom)); }
+ .touch-toolbar button { font-size:11px; min-height:44px; padding:4px; }
+ .spectating .opponent-zone { flex-wrap:nowrap; min-height:0; }
+ .spectating .enemy-hand { display:none; }
+ .info-open #watch-hands-panel { display:block; }
+ #watch-cpu-hand { padding-left:18px; font-size:12px; }
+ #watch-cpu-hand p { font-size:11px; line-height:1.6; }
+ .action-cue,.action-cue[data-kind="power"] { top:45%; bottom:auto; left:50%; right:auto; transform:translate(-50%,-50%); width:calc(100vw - 24px); max-width:450px; grid-template-columns:40px 1fr; padding:10px; gap:8px; }
+ .action-cue .cue-image,.action-cue .cue-image .card-art { width:40px; height:48px; min-height:0; }
+ .cue-star { font-size:36px; }
+ .action-cue .cue-copy strong { font-size:13px; line-height:1.4; margin:3px 0; }
+ .action-cue .cue-copy p { font-size:11px; line-height:1.5; }
+ .action-cue .cue-copy small { font-size:9px; }
+}
+@media(max-width:950px) and (max-height:650px) {
+ .app-shell { grid-template-rows:38px minmax(0,1fr); }
+ .masthead { height:38px; }
+ .arena { grid-template-rows:18px 48px minmax(40px,1fr) 22px minmax(40px,1fr) 42px 38px 102px; }
+ .player-bar { height:42px; }
+ .hero-power-bar button,#weapon-attack { height:36px; min-height:36px; }
+ .hand .card .card-art,.hand .card.expansion-card .card-art { height:30px; }
+ .hand .card .card-description { max-height:20px; font-size:8px; }
+}
+@media(max-width:950px) and (orientation:landscape) and (max-height:550px) {
+ .arena { grid-template-columns:minmax(0,1fr) 150px; grid-template-rows:18px 44px minmax(44px,1fr) 22px minmax(44px,1fr) 42px; grid-template-areas:'top top' 'enemyHeader hand' 'enemyField hand' 'divider hand' 'playerField hand' 'playerBar power'; }
+ .hand-zone { padding:2px 5px; border-left:1px solid var(--line); }
+ .hand { align-items:flex-start; }
+ .hand .card,.hand .card.expansion-card { flex-basis:126px; width:126px; height:150px; max-height:none; }
+ .hand .card .card-art,.hand .card.expansion-card .card-art { height:55px; }
+ .hand .card .card-description { max-height:36px; font-size:10px; }
+ .unit { max-width:85px; }
+ #weapon-attack { grid-area:playerBar; justify-self:center; width:100px; z-index:3; }
+ .player-bar { padding-right:0; }
+ .hero-power-bar small { max-width:105px; }
+ .info-open .sidebar { left:20%; right:20%; }
+}

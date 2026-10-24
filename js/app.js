@@ -3,7 +3,7 @@
   const { CARDS, BY_ID, KEYWORDS } = SeikanCards;
   const { BY_POWER, BY_HERO } = SeikanHeroes;
   const { unitTraits } = SeikanTraits;
-  const { createGame, applyAction, canPlayCard, cardTargets, attackTargets, canUsePower, powerTargets, mulliganCards, canWeaponAttack } = SeikanEngine;
+  const { createGame, applyAction, legalActions, canPlayCard, cardTargets, attackTargets, canUsePower, powerTargets, mulliganCards, canWeaponAttack } = SeikanEngine;
   const { chooseActionAsync, DIFFICULTIES, STYLES, normalizeOptions } = SeikanAI;
   const { illustration, portrait } = SeikanArt;
   const { PACES, DEFAULT_PACE, resultDuration, createPlayback, describeAction } = SeikanPlayback;
@@ -84,7 +84,7 @@
   function render() {
     document.body.classList.toggle('spectating',spectator);
     $('watch-exit').hidden=!spectator;
-    $('duel-mode').textContent=spectator?'◉ CPU vs CPU · 観戦':'◉ CPU DUEL';
+    $('duel-mode').textContent=spectator?`◉ CPU vs CPU · ${state.mode==='arena'?'アリーナ観戦':'観戦'}`:'◉ CPU DUEL';
     $('opponent-name').textContent=spectator?'CPU B':'星よみ経理';
     $('hand-owner').textContent=spectator?'CPU A · HAND':'YOUR HAND';
     $('hand').setAttribute('aria-label',spectator?'CPU Aの手札':'あなたの手札');
@@ -92,6 +92,8 @@
     $('enemy-field').setAttribute('aria-label',spectator?'CPU Bのユニット':'CPUのユニット');
     if(spectator)$('watch-match-info').textContent=['player','cpu'].map(side=>`${side==='player'?'CPU A':'CPU B'}：${DIFFICULTIES[watchConfig[side].settings.difficulty].name}・${STYLES[watchConfig[side].settings.style].name}`).join(' / ');
     $('live-thought-panel').hidden=!spectator;
+    $('watch-hands-panel').hidden=!spectator;
+    $('watch-cpu-hand').innerHTML=spectator?state.cpu.hand.map(c=>{const card=BY_ID[c.cardId];return `<li><strong>${card.cost}マナ · ${card.name}</strong><p>${card.description}</p></li>`;}).join(''):'';
     $('review-button').disabled=state.status!=='finished'||busy||!recording?.finished;
     for(const id of ['arena-button','deck-button','cpu-settings-button'])$(id).disabled=spectator;
     const handScroll = $('hand').scrollLeft;
@@ -141,7 +143,7 @@
     $('hand-count').textContent = `${state.player.hand.length} / 10`;
     $('hand').innerHTML = state.player.hand.length ? state.player.hand.map(item => cardMarkup(BY_ID[item.cardId], item.uid,spectator?'watch':'hand')).join('') : '<p class="hand-empty">手札がありません。次の星の巡りを待とう。</p>';
     $('hand').scrollLeft = handScroll;
-    $('turn-banner').textContent = displayText(state.status === 'mulligan' ? '初手の交換を選択中' : state.status === 'finished' ? '対戦終了' : busy ? (currentDescription?.kind === 'turn' ? currentDescription.title : '行動の効果を確認中') : spectator?`${state.active==='player'?'CPU A':'CPU B'}のターン`:pendingPower ? 'パワーの対象を選択' : pendingCard ? '呪文の対象を選択' : selected ? '攻撃する相手を選択' : playerTurn() ? 'あなたのターン' : '星よみ経理のターン');
+    $('turn-banner').textContent = displayText(state.status === 'mulligan' ? '初手の交換を選択中' : state.status === 'finished' ? '対戦終了' : playback.isPaused()?`${spectator?(state.active==='player'?'CPU A':'CPU B'):'CPU'} · 一時停止中`:cpuThinking?'CPUが思考中':busy ? (currentDescription?.kind === 'turn' ? currentDescription.title : '行動の効果を確認中') : spectator?`${state.active==='player'?'CPU A':'CPU B'}のターン`:pendingPower ? 'パワーの対象を選択' : pendingCard ? '呪文の対象を選択' : selected ? '攻撃する相手を選択' : playerTurn() ? 'あなたのターン' : '星よみ経理のターン');
     $('turn-banner').classList.toggle('cpu-turn', state.active === 'cpu');
     document.querySelector('.arena').dataset.busy = String(busy);
     $('cancel-selection').hidden = !selected && !pendingCard && !pendingPower;
@@ -280,9 +282,28 @@
         let action,analysis=null;const actor=state.active;
         if (cpuSteps++ < 40 || state.choice) {
           cpuThinking = true; render();
+          let settled=false;
+          const fallback=()=>{
+            const actions=legalActions(state,actor);
+            return actions.find(a=>a.type==='choose')||actions.find(a=>a.type==='play')||actions.find(a=>a.type==='attack'||a.type==='weaponAttack')||actions.find(a=>a.type==='end');
+          };
           try {
-            action = await chooseActionAsync(state, actor, { ...(spectator?watchConfig[actor].settings:matchCpu),trace:true,onAnalysis:value=>{analysis=value;}, yieldControl: () => playback.wait(0), isCancelled: () => epoch !== gameEpoch });
-          } finally { if (epoch === gameEpoch) { cpuThinking = false; render(); } }
+            action = await Promise.race([
+              chooseActionAsync(state, actor, { ...(spectator?watchConfig[actor].settings:matchCpu),maxThinkMs:1200,trace:true,onAnalysis:value=>{if(!settled)analysis=value;}, yieldControl: () => playback.wait(0), isCancelled: () => settled||epoch !== gameEpoch }),
+              // 非同期の待機そのものが滞った場合も復帰する。一時停止中はこの時計も止まる。
+              playback.wait(4000).then(ok=>{
+                if(!ok||settled||epoch!==gameEpoch)return null;
+                analysis={...(spectator?watchConfig[actor].settings:matchCpu),nodes:0,timeLimited:true,trace:{method:'bounded',baseline:null,candidates:[]}};
+                return fallback();
+              })
+            ]);
+          } catch(error) {
+            if(epoch!==gameEpoch)return;
+            // 一部端末で探索に失敗しても、対戦全体を思考中のまま止めない。
+            action=fallback();
+            analysis=null;
+            message('CPUの思考を再調整し、合法な行動で続行します。');
+          } finally { settled=true;if (epoch === gameEpoch) { cpuThinking = false; render(); } }
         } else action = { type: 'end', actor };
         if (epoch !== gameEpoch || !await playback.wait(0) || epoch !== gameEpoch) return;
         if(spectator){$('live-thought-title').textContent=`${actor==='player'?'CPU A':'CPU B'}の判断`;renderThought(document,$('live-thought'),state,analysis);}
@@ -295,6 +316,8 @@
     } finally { if (epoch === gameEpoch) { cpuRunning = false; updatePlaybackControls(); } }
   }
   function newGame() {
+    document.body.classList.remove('menu-open','info-open');
+    $('mobile-menu').setAttribute('aria-expanded','false');$('mobile-info').setAttribute('aria-expanded','false');
     resettingMatch = true;
     editorPausedCpu = false; settingsPausedCpu = false; arenaPausedCpu = false; watchPausedCpu=false; cpuThinking = false;
     viewer.close();
@@ -303,10 +326,11 @@
     powerEffects.clear();
     document.querySelectorAll('.battle-trace').forEach(element => element.remove());
     document.querySelectorAll('dialog[open]').forEach(dialog => dialog.close());
+    if(spectator&&watchConfig.mode==='arena')draftWatchDecks();
     currentDeck = spectator?watchConfig.player.deck:arenaMatch ? arenaMatch.player : editor.activeDeck();
     const cpuDeck = spectator?watchConfig.cpu.deck:arenaMatch ? arenaMatch.cpu : SeikanDecks.PRESETS[Math.floor(Math.random() * SeikanDecks.PRESETS.length)];
     if(spectator)matchCpu={...watchConfig.cpu.settings};
-    state = createGame(Math.random, { mode: arenaMatch ? 'arena' : 'constructed', mulligan: true, playerDeck: currentDeck.cards, playerPower: currentDeck.heroPower, playerName: currentDeck.name, cpuDeck: cpuDeck.cards, cpuPower: cpuDeck.heroPower, cpuName: cpuDeck.name });
+    state = createGame(Math.random, { mode: spectator?watchConfig.mode:arenaMatch ? 'arena' : 'constructed', mulligan: true, playerDeck: currentDeck.cards, playerPower: currentDeck.heroPower, playerName: currentDeck.name, cpuDeck: cpuDeck.cards, cpuPower: cpuDeck.heroPower, cpuName: cpuDeck.name });
     recording=createRecording(state,{spectator});$('live-thought').replaceChildren();
     if(spectator&&state.status==='mulligan')for(const side of ['cpu','player']){const action={type:'mulligan',actor:side,cards:mulliganCards(state,side)},result=applyAction(state,action);if(!result.ok)throw Error(result.message);recording.append(state,action,result);state=result.state;}
     resettingMatch = false; openingSelection.clear(); busy = false; activeActor = null; currentDescription = null;
@@ -322,6 +346,7 @@
     void finishIntro(gameEpoch);
   }
   function renderMulligan() {
+    $('mulligan-difficulty').value=matchCpu.difficulty;
     const first = state.first === 'player';
     $('mulligan-order').textContent = `${state.mode==='arena'?'アリーナ：':''}あなたは${first ? '先攻' : '後攻'} · 初手${state.player.hand.length}枚。HP25で開始します。${first ? 'CPUが後攻支援を得ます。' : '初手確定後に「後攻の先借り」を1枚獲得します。'}`;
     $('mulligan-cards').innerHTML = state.player.hand.map(item => cardMarkup(BY_ID[item.cardId],item.uid,'opening').replace('<button ',`<button data-mulligan="${item.uid}" aria-pressed="${openingSelection.has(item.uid)}" `).replace('class="card ',`class="card ${openingSelection.has(item.uid)?'exchange-card ':''}`)).join('');
@@ -438,14 +463,25 @@
   $('pause-cpu').addEventListener('click', () => {
     if (playback.isPaused()) { playback.resume(); message('CPUの進行を再開します。'); }
     else { playback.pause(); message('CPUを一時停止中です。「いまの行動」や履歴をゆっくり確認できます。'); }
-    updatePlaybackControls();
+    render();
   });
   function describeCpuSettings() {
     $('cpu-setting-description').textContent = DIFFICULTIES[cpuPreference.difficulty].description + ' ' + (cpuPreference.style === 'auto' ? '戦術は対戦ごとに選びます。' : STYLES[cpuPreference.style].description);
   }
   $('cpu-difficulty').value = cpuPreference.difficulty; $('cpu-style').value = cpuPreference.style;
+  for(const id of ['mulligan-difficulty','draft-difficulty']){
+    $(id).value=cpuPreference.difficulty;
+    $(id).addEventListener('change',()=>{
+      cpuPreference={...cpuPreference,difficulty:normalizeOptions({difficulty:$(id).value}).difficulty};
+      for(const key of ['cpu-difficulty','mulligan-difficulty','draft-difficulty'])$(key).value=cpuPreference.difficulty;
+      if(state.status==='mulligan')matchCpu={...matchCpu,difficulty:cpuPreference.difficulty};
+      try{localStorage.setItem('seikan-cpu-settings-v1',JSON.stringify(cpuPreference));}catch{}
+      describeCpuSettings();render();
+    });
+  }
   for (const id of ['cpu-difficulty', 'cpu-style']) $(id).addEventListener('change', () => {
     cpuPreference = { difficulty: $('cpu-difficulty').value, style: $('cpu-style').value };
+    for(const id of ['mulligan-difficulty','draft-difficulty'])$(id).value=cpuPreference.difficulty;
     try { localStorage.setItem('seikan-cpu-settings-v1', JSON.stringify(cpuPreference)); } catch { /* このページでは選択を維持する。 */ }
     describeCpuSettings();
   });
@@ -461,6 +497,11 @@
   $('cpu-new-game').addEventListener('click', newGame);
   $('restart-button').addEventListener('click', newGame); $('rematch-button').addEventListener('click', newGame);
   $('help-button').addEventListener('click', () => $('help-dialog').showModal());
+  function closeMobilePanels(){document.body.classList.remove('menu-open','info-open');$('mobile-menu').setAttribute('aria-expanded','false');$('mobile-info').setAttribute('aria-expanded','false');}
+  $('mobile-menu').addEventListener('click',()=>{const open=!document.body.classList.contains('menu-open');closeMobilePanels();document.body.classList.toggle('menu-open',open);$('mobile-menu').setAttribute('aria-expanded',String(open));});
+  $('mobile-info').addEventListener('click',()=>{const open=!document.body.classList.contains('info-open');closeMobilePanels();document.body.classList.toggle('info-open',open);$('mobile-info').setAttribute('aria-expanded',String(open));});
+  $('mobile-info-close').addEventListener('click',closeMobilePanels);
+  $('game-menu').addEventListener('click',closeMobilePanels);
   $('collection-button').addEventListener('click', () => $('collection-dialog').showModal());
   $('collection-grid').addEventListener('click', event => { const card = event.target.closest('[data-card-id]'); if (card) showDetail(card.dataset.cardId); });
   document.querySelectorAll('.close-modal').forEach(button => button.addEventListener('click', () => button.closest('dialog').close()));
@@ -480,7 +521,7 @@
       newGame();
     },
     onConstructed:newConstructedGame,
-    onOpen() { arenaPausedCpu=state.active==='cpu'&&state.status==='playing'&&!playback.isPaused();if(arenaPausedCpu){playback.pause();updatePlaybackControls();} },
+    onOpen() { $('draft-difficulty').value=cpuPreference.difficulty;arenaPausedCpu=state.active==='cpu'&&state.status==='playing'&&!playback.isPaused();if(arenaPausedCpu){playback.pause();updatePlaybackControls();} },
     onClose() { if(arenaPausedCpu){arenaPausedCpu=false;playback.resume();updatePlaybackControls();}if(!resettingMatch&&state.status==='mulligan')openMulligan(); }
   });
   $('arena-button').addEventListener('click',()=>arena.open());
@@ -503,8 +544,23 @@
     if(watchPausedCpu){watchPausedCpu=false;playback.resume();updatePlaybackControls();}
     if(watchOpening&&!resettingMatch&&state.status==='mulligan')openMulligan();watchOpening=false;
   });
+  $('watch-mode').value='constructed';
+  $('watch-mode').addEventListener('change',()=>{
+    const arenaMode=$('watch-mode').value==='arena';$('watch-arena-note').hidden=!arenaMode;
+    for(const side of ['player','cpu'])$('watch-'+side+'-deck').disabled=arenaMode;
+  });
+  function draftWatchDecks(){
+    const A=SeikanArena;let draft=A.createDraft();
+    while(draft.phase!=='complete'){
+      const side=draft.active,options=A.choicesFor(draft,side);
+      const uid=A.chooseCpu({...draft,active:'cpu',cpu:draft[side],offers:options},watchConfig[side].settings.style);
+      const result=A.pick(draft,side,uid);if(!result.ok)throw Error(result.message);draft=result.state;
+    }
+    for(const side of ['player','cpu'])watchConfig[side].deck={cards:[...draft[side].cards],heroPower:BY_HERO[draft[side].hero].power,name:`観戦アリーナ · ${BY_HERO[draft[side].hero].name}`};
+  }
   $('watch-start').addEventListener('click',()=>{
     watchConfig=Object.fromEntries(['player','cpu'].map(side=>[side,{deck:SeikanDecks.PRESETS.find(d=>d.id===$('watch-'+side+'-deck').value)||SeikanDecks.PRESETS[0],settings:normalizeOptions({difficulty:$('watch-'+side+'-difficulty').value,style:$('watch-'+side+'-style').value})}]));
+    watchConfig.mode=$('watch-mode').value==='arena'?'arena':'constructed';
     spectator=true;arenaMatch=null;newGame();
   });
   $('watch-exit').addEventListener('click',newConstructedGame);
