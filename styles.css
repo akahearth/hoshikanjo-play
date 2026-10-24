@@ -2208,7 +2208,7 @@ button { touch-action:manipulation; }
 .start-card small { display:block; font-size:11px; line-height:1.8; color:#c4d3c1; margin-top:5px; }
 .start-card em { display:block; color:#90ad9a; font-size:10px; line-height:1.7; font-style:normal; margin-top:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .start-card b { color:var(--gold); font-weight:normal; }
-.start-tools { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+.start-tools { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
 .start-tools button { min-height:44px; padding:8px 4px; }
 .start-resume-row { display:flex; align-items:center; flex-wrap:wrap; justify-content:center; gap:8px 16px; padding:12px; border:1px solid #d5b97666; border-radius:8px; background:#233e32; }
 .start-resume-row p { font-size:11px; color:#beccb4; margin:0; }
@@ -2226,6 +2226,7 @@ button { touch-action:manipulation; }
  .start-card small { margin-top:0; }
  .start-card em { margin-top:1px; }
  .start-tools button { font-size:11px; }
+ .start-tools { grid-template-columns:repeat(3,minmax(0,1fr)); }
  .start-difficulty { justify-content:flex-start; gap:6px; font-size:12px; }
  .start-difficulty small { font-size:10px; }
  .start-footnote { font-size:9px; }
@@ -2386,3 +2387,14 @@ button { touch-action:manipulation; }
  .spectating .hand .card .card-art { height:24px; }
  .spectating .hand .card .card-description { display:none; }
 }
+.audio-modal { width:min(520px,calc(100vw - 28px)); }
+.audio-sliders { display:grid; gap:14px; margin:18px 0; }
+.audio-sliders label { display:grid; gap:7px; }
+.audio-sliders label span { display:flex; justify-content:space-between; gap:12px; }
+.audio-sliders output { color:var(--gold); font-variant-numeric:tabular-nums; }
+.audio-sliders input { width:100%; min-height:36px; margin:0; accent-color:#d8c79b; cursor:pointer; }
+.audio-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.audio-actions button { flex:1 1 125px; min-height:44px; }
+.audio-actions [aria-pressed="true"] { border-color:#e5c58b; background:#4c513c; }
+.audio-status { min-height:1.6em; color:var(--gold); font-size:13px; }
+.audio-note { color:var(--muted); font-size:12px; line-height:1.7; margin:16px 0; }

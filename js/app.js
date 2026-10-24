@@ -9,6 +9,16 @@
   const { PACES, DEFAULT_PACE, resultDuration, createPlayback, describeAction } = SeikanPlayback;
   const { createRecording, renderThought, createViewer } = SeikanReview;
   const $ = id => document.getElementById(id);
+  const sound = SeikanAudio.createAudio({window,onChange:renderAudioSettings});
+  let audioPausedCpu=false;
+  function renderAudioSettings(){
+    const s=sound.status();
+    for(const key of ['master','effects','music']){$('audio-'+key).value=String(s[key]);$('audio-'+key+'-value').textContent=s[key]+'%';}
+    $('audio-mute').setAttribute('aria-pressed',String(s.muted));$('audio-mute').textContent=s.muted?'消音を解除':'すべて消音';
+    $('audio-enable').hidden=!s.available||s.running;
+    $('audio-test').disabled=!s.available||s.muted||s.master===0||s.effects===0;
+    $('audio-status').textContent=!s.available?'このブラウザでは音声を再生できません。音なしでプレイできます。':s.muted?'すべて消音中です。':s.master===0?'全体音量が0%です。':!s.running?'「音を有効にする」または画面操作で再生できます。':s.music===0?'BGMの音量は0%です。':`BGM：${s.track} · 再生中`;
+  }
   let state;
   let atStart=true,menuWasPaused=false;
   let recording=null;
@@ -174,6 +184,7 @@
     if (!atStart && state.status === 'finished' && !resultShown) {
       resultShown = true;
       const won = state.winner === 'player'; const draw = state.winner === 'draw';
+      sound.reset('menu');sound.play(draw?'drawGame':won||spectator?'victory':'defeat');
       $('result-english').textContent = draw ? 'DRAW' : won ? 'VICTORY' : 'DEFEAT';
       $('result-title').textContent = draw ? '星の数だけ、おあいこ。' : won ? '勝ち星、いただきました。' : '星勘定、仕切り直し。';
       $('result-description').textContent = draw ? '星は分け合い、勝負は引き分け。次の一手は、また新しい盤面で。' : won ? '勝ち星ひとつ、お持ち帰り。精霊たちにも、いい顔ができそうです。' : '今回は星よみ経理が一枚上手。次は、手札でお返しを。';
@@ -268,6 +279,7 @@
       const sourceRect = action.type==='weaponAttack'?entityElement(`${action.actor}-hero`)?.getBoundingClientRect():action.type === 'attack' ? findUnit(action.attacker)?.getBoundingClientRect() : null;
       if (description.powerEffect) powerEffects.capture();
       state = result.state;
+      if(!atStart)sound.playAction(description,result.effects);
       recording.append(before,action,result,analysis,description);
       const handScroll = $('hand').scrollLeft; render(); $('hand').scrollLeft = handScroll;
       present(description, 'result'); animate(result.event, sourceRect, result.effects);
@@ -324,6 +336,7 @@
     } finally { if (epoch === gameEpoch) { cpuRunning = false; updatePlaybackControls(); } }
   }
   function newGame() {
+    sound.reset('battle');audioPausedCpu=false;
     atStart=false;menuWasPaused=false;
     $('start-screen').hidden=true;$('game-shell').hidden=false;$('touch-toolbar').hidden=false;document.body.classList.remove('at-start');
     document.body.classList.remove('menu-open','info-open');
@@ -506,6 +519,23 @@
     $('cpu-dialog').showModal();
   }
   $('cpu-settings-button').addEventListener('click',openCpuSettings);
+  function openAudioSettings(){
+    audioPausedCpu=!atStart&&state?.status==='playing'&&!playback.isPaused();
+    if(audioPausedCpu){playback.pause();updatePlaybackControls();}
+    renderAudioSettings();$('audio-dialog').showModal();
+  }
+  for(const id of ['start-audio','audio-button'])$(id).addEventListener('click',openAudioSettings);
+  for(const key of ['master','effects','music'])$('audio-'+key).addEventListener('input',()=>sound.setSettings({[key]:Number($('audio-'+key).value)}));
+  $('audio-enable').addEventListener('click',()=>void sound.unlock());
+  $('audio-test').addEventListener('click',async()=>{if(await sound.unlock())sound.play('discover');});
+  $('audio-mute').addEventListener('click',()=>sound.setSettings({muted:!sound.getSettings().muted}));
+  $('audio-dialog').addEventListener('close',()=>{const resume=audioPausedCpu;audioPausedCpu=false;if(resume&&!atStart&&!resettingMatch){playback.resume();updatePlaybackControls();if(!busy&&automated()&&!cpuRunning)void scheduleCpu();}});
+  document.addEventListener('pointerdown',()=>void sound.unlock(),{capture:true});
+  document.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')void sound.unlock();},{capture:true});
+  document.addEventListener('visibilitychange',()=>sound.setHidden(Boolean(document.hidden)));
+  window.addEventListener('pagehide',()=>sound.setHidden(true));
+  window.addEventListener('pageshow',()=>sound.setHidden(Boolean(document.hidden)));
+  sound.setHidden(Boolean(document.hidden));
   $('cpu-dialog').addEventListener('close', () => {
     if (settingsPausedCpu) { settingsPausedCpu = false; if(!atStart)playback.resume(); updatePlaybackControls(); }
   });
@@ -588,6 +618,7 @@
     $('start-resume-note').textContent=state?`${spectator?'CPU同士の観戦':state.mode==='arena'?'アリーナ':'通常対戦'} · ${state.status==='mulligan'?'初手交換中':`ラウンド ${Math.ceil(state.turn/2)}`}`:'';
   }
   function openStartMenu(){
+    sound.reset('menu');
     if(!atStart){menuWasPaused=playback.isPaused();playback.pause();}
     atStart=true;closeMobilePanels();viewer.close();
     document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());
@@ -598,6 +629,7 @@
   }
   function resumeFromStart(){
     if(!state)return;
+    sound.reset(state.status==='finished'?'menu':'battle');
     atStart=false;$('start-screen').hidden=true;$('game-shell').hidden=false;$('touch-toolbar').hidden=false;document.body.classList.remove('at-start');
     if(!menuWasPaused)playback.resume();render();
     if(state.status==='mulligan')openMulligan();

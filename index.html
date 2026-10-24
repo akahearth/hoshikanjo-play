@@ -6,27 +6,28 @@
   <meta name="theme-color" content="#102b2b">
   <meta name="description" content="勝ち星、いただきます。星と精霊の洒落が効いた、オフラインで遊べるターン制カードゲーム。">
   <title>星勘定の決闘 | HOSHIKANJO</title>
-  <link rel="icon" href="assets/favicon.svg?v=2.4.0-36309c178097" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon.svg?v=2.5.0-36309c178097" type="image/svg+xml">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="星勘定">
-  <link rel="manifest" href="manifest.webmanifest?v=2.4.0-871f04ed9ad1">
-  <link rel="stylesheet" href="styles.css?v=2.4.0-76e21f408802">
-  <script defer src="js/cards.js?v=2.4.0-2d9ef147d00a"></script>
-  <script defer src="js/strategy.js?v=2.4.0-b14e27de10a0"></script>
-  <script defer src="js/heroes.js?v=2.4.0-e0ec92a3efbd"></script>
-  <script defer src="js/decks.js?v=2.4.0-e193b59a7436"></script>
-  <script defer src="js/arena.js?v=2.4.0-1d44172dac3b"></script>
-  <script defer src="js/effects.js?v=2.4.0-9407767addfa"></script>
-  <script defer src="js/engine.js?v=2.4.0-5ab255b7799d"></script>
-  <script defer src="js/ai.js?v=2.4.0-ba25db9756cb"></script>
-  <script defer src="js/art.js?v=2.4.0-39dc8f5baf2e"></script>
-  <script defer src="js/traits.js?v=2.4.0-a11a8cc20e8a"></script>
-  <script defer src="js/playback.js?v=2.4.0-e41084e7ac26"></script>
-  <script defer src="js/review.js?v=2.4.0-1f4cd7396430"></script>
-  <script defer src="js/power-effects.js?v=2.4.0-10b2b14c74b2"></script>
-  <script defer src="js/deck-editor.js?v=2.4.0-b8cb17af545b"></script>
-  <script defer src="js/arena-editor.js?v=2.4.0-b43174a2fcff"></script>
-  <script defer src="js/app.js?v=2.4.0-4a93bcc773d0"></script>
+  <link rel="manifest" href="manifest.webmanifest?v=2.5.0-871f04ed9ad1">
+  <link rel="stylesheet" href="styles.css?v=2.5.0-8bdb5d7adac0">
+  <script defer src="js/cards.js?v=2.5.0-2d9ef147d00a"></script>
+  <script defer src="js/strategy.js?v=2.5.0-b14e27de10a0"></script>
+  <script defer src="js/heroes.js?v=2.5.0-e0ec92a3efbd"></script>
+  <script defer src="js/decks.js?v=2.5.0-e193b59a7436"></script>
+  <script defer src="js/arena.js?v=2.5.0-1d44172dac3b"></script>
+  <script defer src="js/effects.js?v=2.5.0-9407767addfa"></script>
+  <script defer src="js/engine.js?v=2.5.0-5ab255b7799d"></script>
+  <script defer src="js/ai.js?v=2.5.0-ba25db9756cb"></script>
+  <script defer src="js/art.js?v=2.5.0-39dc8f5baf2e"></script>
+  <script defer src="js/traits.js?v=2.5.0-a11a8cc20e8a"></script>
+  <script defer src="js/playback.js?v=2.5.0-e41084e7ac26"></script>
+  <script defer src="js/review.js?v=2.5.0-1f4cd7396430"></script>
+  <script defer src="js/power-effects.js?v=2.5.0-10b2b14c74b2"></script>
+  <script defer src="js/deck-editor.js?v=2.5.0-b8cb17af545b"></script>
+  <script defer src="js/arena-editor.js?v=2.5.0-b43174a2fcff"></script>
+  <script defer src="js/audio.js?v=2.5.0-ecd4d1af588e"></script>
+  <script defer src="js/app.js?v=2.5.0-d049d28f85e4"></script>
 </head>
 <body>
   <main id="start-screen" class="start-screen" aria-labelledby="start-title">
@@ -38,14 +39,14 @@
       <button id="start-arena" class="start-card"><span class="start-icon" aria-hidden="true">❖</span><span><strong>アリーナ</strong><small>自分だけの3候補から22枚を選んで対戦</small><em>同じページ内でピックを再開できます</em></span><b aria-hidden="true">→</b></button>
       <button id="start-watch" class="start-card"><span class="start-icon" aria-hidden="true">◉</span><span><strong>CPU同士を観戦</strong><small>構築戦・アリーナを選んで手合わせ見物</small><em>両手札とCPUの判断を確認</em></span><b aria-hidden="true">→</b></button>
     </div>
-    <div class="start-tools" role="group" aria-label="準備と設定"><button id="start-deck" class="editor-button">デッキ編集</button><button id="start-collection" class="editor-button">カード一覧</button><button id="start-settings" class="editor-button">CPU設定</button><button id="start-help" class="editor-button">遊び方</button></div>
-    <p class="start-footnote">デッキと設定は、この端末のブラウザ内に保存されます。<span>v2.4.0</span></p>
+    <div class="start-tools" role="group" aria-label="準備と設定"><button id="start-deck" class="editor-button">デッキ編集</button><button id="start-collection" class="editor-button">カード一覧</button><button id="start-settings" class="editor-button">CPU設定</button><button id="start-audio" class="editor-button">♫ 音設定</button><button id="start-help" class="editor-button">遊び方</button></div>
+    <p class="start-footnote">デッキと設定は、この端末のブラウザ内に保存されます。<span>v2.5.0</span></p>
   </main>
   <div id="game-shell" class="app-shell" hidden>
     <header class="masthead">
       <a id="home-logo" class="brand" href="index.html" aria-label="星勘定の決闘 ホーム"><span class="brand-mark" aria-hidden="true">✧</span><span><span class="brand-title">星勘定の決闘</span><span class="brand-sub">HOSHIKANJO &nbsp; / &nbsp; CARD DUEL</span></span></a>
       <div class="header-caption">勝ち星、いただきます。</div>
-      <button id="mobile-menu" class="mobile-control" aria-expanded="false" aria-controls="game-menu">メニュー ☰</button><nav id="game-menu" aria-label="ゲームメニュー"><button class="text-button" id="home-button">スタートメニュー</button><button class="text-button" id="watch-button">CPU同士を観戦</button><button class="text-button arena-entry" id="arena-button">✧ アリーナ</button><button class="text-button" id="cpu-settings-button">CPU設定</button><button class="text-button" id="deck-button">デッキ編集 <span>↗</span></button><button class="text-button" id="collection-button">カード一覧</button><button class="text-button" id="help-button"><span class="question-mark">?</span> 遊び方</button><button class="mobile-control" id="mobile-restart">新しい対戦 ↻</button></nav>
+      <button id="mobile-menu" class="mobile-control" aria-expanded="false" aria-controls="game-menu">メニュー ☰</button><nav id="game-menu" aria-label="ゲームメニュー"><button class="text-button" id="home-button">スタートメニュー</button><button class="text-button" id="watch-button">CPU同士を観戦</button><button class="text-button arena-entry" id="arena-button">✧ アリーナ</button><button class="text-button" id="cpu-settings-button">CPU設定</button><button class="text-button" id="audio-button">♫ 音設定</button><button class="text-button" id="deck-button">デッキ編集 <span>↗</span></button><button class="text-button" id="collection-button">カード一覧</button><button class="text-button" id="help-button"><span class="question-mark">?</span> 遊び方</button><button class="mobile-control" id="mobile-restart">新しい対戦 ↻</button></nav>
     </header>
     <main class="game-layout">
       <section class="arena" aria-label="対戦盤面">
@@ -96,6 +97,20 @@
   </div>
   <div id="touch-toolbar" class="touch-toolbar" aria-label="タップ操作" hidden><button id="mobile-info" aria-expanded="false">情報・一時停止</button><button id="inspect-toggle" aria-pressed="false">詳細を見る</button><button id="touch-end-turn">ターン終了 →</button></div>
   <div id="power-effect-layer" class="power-effect-layer" hidden aria-hidden="true"></div>
+  <dialog id="audio-dialog" class="modal audio-modal" aria-labelledby="audio-title">
+    <div class="modal-heading"><span class="eyebrow">SOUND · 星に音を添えて</span><button class="close-modal" aria-label="音設定を閉じる">×</button></div>
+    <h2 id="audio-title">音の勘定、お好みで。</h2>
+    <p class="dialog-intro">召喚や攻撃の効果音と、場面に合わせたオリジナルBGM。音量はすぐに反映されます。</p>
+    <div class="audio-sliders">
+      <label for="audio-master"><span>全体音量 <output id="audio-master-value" for="audio-master">70%</output></span><input id="audio-master" type="range" min="0" max="100" step="1" value="70"></label>
+      <label for="audio-effects"><span>効果音 <output id="audio-effects-value" for="audio-effects">65%</output></span><input id="audio-effects" type="range" min="0" max="100" step="1" value="65"></label>
+      <label for="audio-music"><span>BGM <output id="audio-music-value" for="audio-music">25%</output></span><input id="audio-music" type="range" min="0" max="100" step="1" value="25"></label>
+    </div>
+    <p id="audio-status" class="audio-status" role="status" aria-live="polite"></p>
+    <div class="audio-actions"><button id="audio-enable" class="editor-button">音を有効にする</button><button id="audio-test" class="editor-button">効果音を試す ♪</button><button id="audio-mute" class="editor-button" aria-pressed="false">すべて消音</button></div>
+    <p class="audio-note">初回は画面の操作後に再生します。音量と消音はこのブラウザに保存。別のタブやアプリに移ると音を停止します。</p>
+    <button id="audio-back" class="primary-button close-modal">閉じる</button>
+  </dialog>
   <dialog id="cpu-dialog" class="modal cpu-modal" aria-labelledby="cpu-dialog-title"><div class="modal-heading"><span class="eyebrow">CPU OPPONENT · PHASE 04</span><button class="close-modal" aria-label="CPU設定を閉じる">×</button></div><h2 id="cpu-dialog-title">対戦相手を選ぶ</h2><p class="dialog-intro">難易度と戦術を選んで、新しい星の巡りへ。</p><section class="cpu-panel" aria-label="CPUの設定"><div class="panel-heading"><h2>対戦相手</h2><span>CPU</span></div><div class="cpu-selects"><label for="cpu-difficulty">難易度<select id="cpu-difficulty"><option value="easy">入門</option><option value="normal" selected>標準</option><option value="hard">上級</option><option value="expert">達人</option></select></label><label for="cpu-style">戦術<select id="cpu-style"><option value="balanced">均衡</option><option value="aggressive">攻勢</option><option value="defensive">守勢</option><option value="auto">おまかせ</option></select></label></div><p id="cpu-setting-description"></p><p id="cpu-match-status" role="status" aria-live="polite"></p><small>変更は次の対戦から反映します。</small><button class="editor-button" id="cpu-new-game">この設定で新しい対戦 ↻</button></section><button id="cpu-settings-back" class="text-button close-modal">対戦に戻る</button></dialog>
   <dialog id="help-dialog" class="modal">
     <div class="modal-heading"><span class="eyebrow">HOW TO PLAY · PHASE 04</span><button class="close-modal" aria-label="閉じる">×</button></div>
