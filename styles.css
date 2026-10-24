@@ -2398,3 +2398,7 @@ button { touch-action:manipulation; }
 .audio-actions [aria-pressed="true"] { border-color:#e5c58b; background:#4c513c; }
 .audio-status { min-height:1.6em; color:var(--gold); font-size:13px; }
 .audio-note { color:var(--muted); font-size:12px; line-height:1.7; margin:16px 0; }
+.discover-actions { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.discover-actions button { min-height:44px; }
+.discover-view-note { color:var(--muted); font-size:12px; line-height:1.7; margin:12px 0 0; }
+.discovery-board-view #touch-end-turn { color:#f3deb0; border-color:#ddc38c; background:#425741; }

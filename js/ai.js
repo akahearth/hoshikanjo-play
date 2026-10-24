@@ -158,6 +158,30 @@
     }
     return worst;
   }
+  function informationFirst(state,side,stats){
+    const chosen=stats.action,owner=state[side];
+    const reserved=chosen?.type==='play'?BY_ID[owner.hand.find(c=>c.uid===chosen.card)?.cardId]:null;
+    if(reserved?.type!=='unit')return stats;
+    // 未来の札は見ず、予定の召喚のマナと場枠を残せる情報源だけ先行する。
+    const candidates=[];
+    for(const action of legalActions(state,side)){
+      if(action.type!=='play'||action.card===chosen.card)continue;
+      const card=BY_ID[owner.hand.find(c=>c.uid===action.card).cardId],effects=card.effects.filter(e=>e.trigger==='play');
+      const draws=effects.filter(e=>e.type==='draw').reduce((n,e)=>n+e.amount,0),discovers=effects.filter(e=>e.type==='discover').length;
+      const slots=(card.type==='unit'?1:0)+effects.filter(e=>e.type==='summon').reduce((n,e)=>n+e.amount,0);
+      if(draws+discovers>0&&owner.deck.length>=draws&&owner.hand.length-1+draws+discovers<=RULES.handLimit
+        &&card.cost+reserved.cost<=owner.mana&&owner.board.length+slots<RULES.boardLimit)candidates.push({action,draws,discovers,cost:card.cost});
+    }
+    candidates.sort((a,b)=>(b.draws+b.discovers)-(a.draws+a.discovers)||a.cost-b.cost);
+    if(!candidates.length)return stats;
+    // 時間上限で返す一手にも適用するが、既知の即時勝利を置き換えない。
+    const outcome=applyAction(state,chosen);
+    if(outcome.ok&&outcome.state.winner===side)return stats;
+    const first=candidates[0];stats.action=first.action;
+    if(stats.trace)stats.trace.ordering={reserved:{...chosen},reservedCost:reserved.cost,sourceCost:first.cost,
+      ...(first.draws?{drawCost:first.cost}:{}),draws:first.draws,discovers:first.discovers};
+    return stats;
+  }
   function* search(input, side, options) {
     const settings = normalizeOptions(options); const config = DIFFICULTIES[settings.difficulty]; const style = {...STYLES[settings.style],advanced:settings.difficulty!=='easy'};
     const stats = { ...settings, nodes: 0, action: null };
@@ -179,28 +203,6 @@
       return stats;
     }
     const state = observe(input, side); const known = new Set(state[side].hand.map(card => card.uid));
-    function drawFirst() {
-      const chosen = stats.action, owner = state[side];
-      const reserved = chosen?.type === 'play' ? BY_ID[owner.hand.find(c => c.uid === chosen.card)?.cardId] : null;
-      if (reserved?.type !== 'unit') return stats;
-      // 引く札は未知のまま。元の召喚のマナ・場枠を残せる即時ドローだけ先行する。
-      const candidates = [];
-      for (const action of legalActions(state, side)) {
-        if (action.type !== 'play' || action.card === chosen.card) continue;
-        const card = BY_ID[owner.hand.find(c => c.uid === action.card).cardId];
-        const draws = card.effects.filter(e => e.trigger === 'play' && e.type === 'draw').reduce((n, e) => n + e.amount, 0);
-        if (draws > 0 && owner.deck.length >= draws && owner.hand.length - 1 + draws <= RULES.handLimit
-          && card.cost + reserved.cost <= owner.mana && owner.board.length + (card.type === 'unit' ? 1 : 0) < RULES.boardLimit) {
-          candidates.push({ action, draws, cost: card.cost });
-        }
-      }
-      candidates.sort((a, b) => b.draws - a.draws || a.cost - b.cost);
-      if (candidates.length) {
-        stats.action = candidates[0].action;
-        if (stats.trace) stats.trace.ordering = { reserved: { ...chosen }, reservedCost: reserved.cost, drawCost: candidates[0].cost };
-      }
-      return stats;
-    }
     const actionsFor = s => {
       const actions=legalActions(s,side).filter(a=>a.type!=='play'||known.has(a.card));
       if(settings.difficulty==='easy')return actions;
@@ -244,7 +246,7 @@
           stats.action = action; score = value;
         }
       }
-      return drawFirst();
+      return informationFirst(state,side,stats);
     }
     let frontier = [{ state, first: null, score: baseline, quality: 0, depth: 0 }];
     let partialScore=baseline;
@@ -285,7 +287,7 @@
       record(candidate.first,score,{positionScore:candidate.score,depth:candidate.depth});
       if (!best || ranked.score > best.score || (ranked.score === best.score && (ranked.positionScore > best.positionScore || (ranked.positionScore === best.positionScore && compare(ranked, best) < 0)))) {best = ranked;stats.action=best.first;}
     }
-    stats.action = best?.first || end; return drawFirst();
+    stats.action = best?.first || end; return informationFirst(state,side,stats);
   }
   function analyze(state, side = 'cpu', options = {}) {
     const iterator = search(state, side, options); let next;
@@ -309,6 +311,7 @@
         const stats=next.value;stats.timeLimited=true;
         // 未完了の反撃探索を完了済みとして扱わない。
         if(stats.trace)stats.trace={method:'bounded',baseline:stats.trace.baseline,candidates:[]};
+        informationFirst(observe(state,side),side,stats);
         iterator.return();options.onAnalysis?.(stats);return stats.action;
       }
       if (await pause() === false) return null;
