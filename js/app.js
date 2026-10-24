@@ -495,7 +495,7 @@
     if (settingsPausedCpu) { settingsPausedCpu = false; playback.resume(); updatePlaybackControls(); }
   });
   $('cpu-new-game').addEventListener('click', newGame);
-  $('restart-button').addEventListener('click', newGame); $('rematch-button').addEventListener('click', newGame);
+  $('restart-button').addEventListener('click', newGame); $('mobile-restart').addEventListener('click',newGame); $('rematch-button').addEventListener('click', newGame);
   $('help-button').addEventListener('click', () => $('help-dialog').showModal());
   function closeMobilePanels(){document.body.classList.remove('menu-open','info-open');$('mobile-menu').setAttribute('aria-expanded','false');$('mobile-info').setAttribute('aria-expanded','false');}
   $('mobile-menu').addEventListener('click',()=>{const open=!document.body.classList.contains('menu-open');closeMobilePanels();document.body.classList.toggle('menu-open',open);$('mobile-menu').setAttribute('aria-expanded',String(open));});
