@@ -45,8 +45,8 @@
   function thought(state,analysis){
     if(!analysis?.trace)return {headline:'CPUの評価記録はありません',details:'人の操作、初手交換、または行動上限によるターン終了です。',rows:[]};
     const t=analysis.trace,method=t.method;
-    const headline=method==='bounded'?'思考時間の上限で探索を区切り、合法な一手で続行しました':t.ordering?`予定ユニットのマナを残して、先に${orderingName(t.ordering)}します`:method==='lethal'||t.candidates.some(c=>c.winning)?'探索した手順に確定勝利が見つかりました':method==='discover'?'発見の候補を比較しました':method==='immediate'?'現在の一手の結果を比較しました':'連続する行動と、公開盤面からの反撃を比較しました';
-    const rows=t.candidates.slice().sort((a,b)=>b.score-a.score).map(c=>({label:actionName(state,c.action),score:c.score,positionScore:c.positionScore,depth:c.depth||1,chosen:JSON.stringify(c.action)===JSON.stringify(analysis.action),winning:!!c.winning}));
+    const headline=method==='bounded'?'思考時間の上限で探索を区切り、合法な一手で続行しました':t.ordering?`予定ユニットのマナを残して、先に${orderingName(t.ordering)}します`:method==='lethal'||t.candidates.some(c=>c.winning)?'探索した手順に確定勝利が見つかりました':method==='discover'?'発見後の行動と、公開盤面からの反撃を比較しました':method==='immediate'?'現在の一手の結果を比較しました':'連続する行動と、公開盤面からの反撃を比較しました';
+    const rows=t.candidates.slice().sort((a,b)=>b.score-a.score).map(c=>({label:actionName(state,c.action),score:c.score,positionScore:c.positionScore,depth:c.depth||1,followUp:[...(c.followUp||[])],chosen:JSON.stringify(c.action)===JSON.stringify(analysis.action),winning:!!c.winning}));
     if(t.ordering&&!rows.some(r=>r.chosen))rows.unshift({label:actionName(state,analysis.action),score:null,chosen:true,depth:1});
     const visible=rows.slice(0,12),chosen=rows.find(r=>r.chosen);if(chosen&&!visible.some(r=>r.chosen))visible.splice(11,1,chosen);
     return {headline,details:`${DIFFICULTIES[analysis.difficulty].name}・${STYLES[analysis.style].name} / 探索 ${analysis.nodes}局面${Number.isFinite(t.baseline)?' / 行動前の評価 '+t.baseline.toFixed(2):''}。評価は選ぶ側から見て大きいほど有利。勝率ではありません。`,rows:visible};
@@ -56,9 +56,9 @@
     const title=document.createElement('strong');title.textContent=info.headline;container.append(title);
     const detail=document.createElement('p');detail.textContent=info.details;container.append(detail);
     if(analysis?.trace?.ordering){const o=analysis.trace.ordering,note=document.createElement('p');note.textContent=`先に${actionName(state,analysis.action)}。予定：${actionName(state,o.reserved)}（${o.reservedCost}マナ）。${orderingName(o)}に${o.sourceCost??o.drawCost}マナ使っても召喚分を残せるため、手札が増えた後に選び直します。これは点数とは別の順序方針です。`;container.append(note);}
-    if(analysis?.trace){const basis=document.createElement('p');basis.textContent=analysis.trace.method==='discover'?'発見はカードの能力・コスト、今使えるマナ、公開された敵の盤面を基準に採点します。':'盤面の攻撃力・HP・特性・死亡時能力、双方の体力、手札枚数と残りマナを採点します。標準・上級は公開打点による敗北の危険も減点します。';container.append(basis);}
+    if(analysis?.trace){const basis=document.createElement('p');basis.textContent=analysis.trace.method==='discover'?'取得後に今の手札と組み合わせて使う手順、残る手札の価値、公開盤面からの反撃を比較します。入門は直後の一手を比較します。':'盤面の攻撃力・HP・特性・死亡時能力、双方の体力、手札と残りマナを採点します。標準以上は挑発・星護・毒を考慮した公開打点と、手札の使いやすさも評価します。';container.append(basis);}
     const list=document.createElement('ol');
-    for(const row of info.rows){const item=document.createElement('li');item.textContent=`${row.chosen?'✓ 選択：':''}${row.label} / ${row.score===null?`${orderingName(analysis.trace?.ordering)}順序を優先（未採点）`:`${Number.isFinite(row.positionScore)?'手順後 '+row.positionScore.toFixed(2)+' → 反撃込み ': '評価 '}${row.score.toFixed(2)}`}${row.winning?'（確定勝利）':''}${analysis.trace.method==='reply'?` / 手順深さ ${row.depth}`:''}`;if(row.chosen)item.className='thought-chosen';list.append(item);}container.append(list);
+    for(const row of info.rows){const item=document.createElement('li');item.textContent=`${row.chosen?'✓ 選択：':''}${row.label} / ${row.score===null?`${orderingName(analysis.trace?.ordering)}順序を優先（未採点）`:`${Number.isFinite(row.positionScore)?'手順後 '+row.positionScore.toFixed(2)+' → 反撃込み ': '評価 '}${row.score.toFixed(2)}`}${row.winning?'（確定勝利）':''}${['reply','discover','lethal'].includes(analysis.trace.method)?` / 手順深さ ${row.depth}`:''}`;if(row.followUp?.length){const plan=document.createElement('p');plan.textContent='想定手順：'+row.followUp.join(' → ');item.append(plan);}if(row.chosen)item.className='thought-chosen';list.append(item);}container.append(list);
     const note=document.createElement('small');note.textContent='相手の非公開手札・山札順・未来の発見候補は参照しません。候補は探索できた一部です。反撃比較の行は、手順を終えた後の評価で、同じ最初の行動が複数並ぶ場合があります。';container.append(note);
   }
   function createViewer({document,cardMarkup,illustration}){
