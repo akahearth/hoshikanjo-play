@@ -6,31 +6,32 @@
   <meta name="theme-color" content="#102b2b">
   <meta name="description" content="勝ち星、いただきます。星と精霊の洒落が効いた、オフラインで遊べるターン制カードゲーム。">
   <title>星勘定の決闘 | HOSHIKANJO</title>
-  <link rel="icon" href="assets/favicon.svg?v=2.7.0-36309c178097" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon.svg?v=2.8.0-36309c178097" type="image/svg+xml">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="星勘定">
-  <link rel="manifest" href="manifest.webmanifest?v=2.7.0-871f04ed9ad1">
-  <link rel="stylesheet" href="styles.css?v=2.7.0-4d0aad20da22">
-  <script defer src="js/cards.js?v=2.7.0-2d9ef147d00a"></script>
-  <script defer src="js/strategy.js?v=2.7.0-b14e27de10a0"></script>
-  <script defer src="js/heroes.js?v=2.7.0-e0ec92a3efbd"></script>
-  <script defer src="js/decks.js?v=2.7.0-e193b59a7436"></script>
-  <script defer src="js/arena.js?v=2.7.0-1d44172dac3b"></script>
-  <script defer src="js/effects.js?v=2.7.0-9407767addfa"></script>
-  <script defer src="js/engine.js?v=2.7.0-5ab255b7799d"></script>
-  <script defer src="js/ai-weights.js?v=2.7.0-7646598501fd"></script>
-  <script defer src="js/ai.js?v=2.7.0-5eeaeb02aa90"></script>
-  <script defer src="js/art.js?v=2.7.0-39dc8f5baf2e"></script>
-  <script defer src="js/traits.js?v=2.7.0-a11a8cc20e8a"></script>
-  <script defer src="js/playback.js?v=2.7.0-e41084e7ac26"></script>
-  <script defer src="js/review.js?v=2.7.0-a24fb29ecf16"></script>
-  <script defer src="js/match-history.js?v=2.7.0-797d7c346537"></script>
-  <script defer src="js/releases.js?v=2.7.0-7a6806e034a7"></script>
-  <script defer src="js/power-effects.js?v=2.7.0-10b2b14c74b2"></script>
-  <script defer src="js/deck-editor.js?v=2.7.0-b8cb17af545b"></script>
-  <script defer src="js/arena-editor.js?v=2.7.0-b43174a2fcff"></script>
-  <script defer src="js/audio.js?v=2.7.0-ecd4d1af588e"></script>
-  <script defer src="js/app.js?v=2.7.0-1623a1f4e7f8"></script>
+  <link rel="manifest" href="manifest.webmanifest?v=2.8.0-871f04ed9ad1">
+  <link rel="stylesheet" href="styles.css?v=2.8.0-1ae7d08b7933">
+  <script defer src="js/cards.js?v=2.8.0-2d9ef147d00a"></script>
+  <script defer src="js/strategy.js?v=2.8.0-b14e27de10a0"></script>
+  <script defer src="js/heroes.js?v=2.8.0-e0ec92a3efbd"></script>
+  <script defer src="js/decks.js?v=2.8.0-e193b59a7436"></script>
+  <script defer src="js/arena.js?v=2.8.0-1d44172dac3b"></script>
+  <script defer src="js/effects.js?v=2.8.0-9407767addfa"></script>
+  <script defer src="js/engine.js?v=2.8.0-5ab255b7799d"></script>
+  <script defer src="js/ai-weights.js?v=2.8.0-7646598501fd"></script>
+  <script defer src="js/ai.js?v=2.8.0-5eeaeb02aa90"></script>
+  <script defer src="js/assist.js?v=2.8.0-d0f22e9d1ad2"></script>
+  <script defer src="js/art.js?v=2.8.0-39dc8f5baf2e"></script>
+  <script defer src="js/traits.js?v=2.8.0-a11a8cc20e8a"></script>
+  <script defer src="js/playback.js?v=2.8.0-e41084e7ac26"></script>
+  <script defer src="js/review.js?v=2.8.0-a24fb29ecf16"></script>
+  <script defer src="js/match-history.js?v=2.8.0-797d7c346537"></script>
+  <script defer src="js/releases.js?v=2.8.0-a42c02d5eb23"></script>
+  <script defer src="js/power-effects.js?v=2.8.0-10b2b14c74b2"></script>
+  <script defer src="js/deck-editor.js?v=2.8.0-b8cb17af545b"></script>
+  <script defer src="js/arena-editor.js?v=2.8.0-b43174a2fcff"></script>
+  <script defer src="js/audio.js?v=2.8.0-ecd4d1af588e"></script>
+  <script defer src="js/app.js?v=2.8.0-3f61bbffee6f"></script>
 </head>
 <body>
   <main id="start-screen" class="start-screen" aria-labelledby="start-title">
@@ -43,7 +44,7 @@
       <button id="start-watch" class="start-card"><span class="start-icon" aria-hidden="true">◉</span><span><strong>CPU同士を観戦</strong><small>構築戦・アリーナを選んで手合わせ見物</small><em>両手札とCPUの判断を確認</em></span><b aria-hidden="true">→</b></button>
     </div>
     <div class="start-tools" role="group" aria-label="準備と設定"><button id="start-deck" class="editor-button">デッキ編集</button><button id="start-collection" class="editor-button">カード一覧</button><button id="start-settings" class="editor-button">CPU設定</button><button id="start-audio" class="editor-button">♫ 音設定</button><button id="start-help" class="editor-button">遊び方</button><button id="start-history" class="editor-button">対戦履歴（10件）</button><button id="start-updates" class="editor-button">更新履歴</button></div>
-    <p class="start-footnote">デッキと設定は、この端末のブラウザ内に保存されます。<span>v2.7.0</span></p>
+    <p class="start-footnote">デッキと設定は、この端末のブラウザ内に保存されます。<span>v2.8.0</span></p>
   </main>
   <div id="game-shell" class="app-shell" hidden>
     <header class="masthead">
@@ -63,7 +64,7 @@
         <button class="hero enemy-hero" id="enemy-hero" data-target="hero" aria-label="CPUのヒーローに攻撃"><span class="hero-aura"></span><span class="hero-portrait" id="enemy-portrait"></span><span class="hero-hp" id="cpu-hp">25</span><span class="hero-name" id="cpu-hero-name">星よみ経理</span></button>
         <span id="cpu-weapon" class="equipped-weapon" hidden></span>
         <div class="field enemy-field" id="enemy-field" role="group" aria-label="CPUのユニット"></div>
-        <div class="battle-divider"><span></span><div class="turn-banner" id="turn-banner">あなたのターン</div><span></span></div>
+        <div class="battle-divider"><span></span><div class="turn-banner" id="turn-banner">あなたのターン</div><span></span><div id="assist-panel" class="assist-panel" role="status" aria-live="polite" hidden><div><strong id="assist-title"></strong><p id="assist-description"></p></div><button id="assist-dismiss" aria-label="アシスト表示を消す">×</button></div></div>
         <div class="action-cue" id="action-cue" hidden aria-hidden="true"></div>
         <div class="field player-field" id="player-field" role="group" aria-label="あなたのユニット"></div>
         <div class="trait-legend" aria-label="能力の見分け方"><span>◎ 星護あり</span><span>⬡ 挑発</span><span>⇢ 速攻</span><span>⋮ 毒</span><span>◇ 死亡時</span><small>光輪が消えると星護消失</small></div>
@@ -78,7 +79,7 @@
       </section>
       <aside class="sidebar" aria-label="対戦情報">
         <button id="mobile-info-close" class="mobile-control">対戦情報を閉じる ×</button>
-        <section class="match-panel"><span class="eyebrow">THE DUEL</span><h1>星を数えて、<br>手は抜かない。</h1><p>勝ち星の勘定は、精霊まかせ。<br>相手のHPを0にすれば勝利。</p><div class="match-meta"><span>使用デッキ</span><strong id="match-deck-name">星勘定はじめました</strong></div><button id="end-turn" class="end-turn">ターン終了 <span>→</span></button><div class="action-message" id="action-message" role="status" aria-live="polite"></div></section>
+        <section class="match-panel"><span class="eyebrow">THE DUEL</span><h1>星を数えて、<br>手は抜かない。</h1><p>勝ち星の勘定は、精霊まかせ。<br>相手のHPを0にすれば勝利。</p><div class="match-meta"><span>使用デッキ</span><strong id="match-deck-name">星勘定はじめました</strong></div><button id="assist-button" class="editor-button assist-button" disabled>✧ アシスト（達人）</button><button id="end-turn" class="end-turn">ターン終了 <span>→</span></button><div class="action-message" id="action-message" role="status" aria-live="polite"></div></section>
         <section class="playback-panel" aria-label="対戦の進行設定">
           <label for="playback-speed">進行速度</label>
           <select id="playback-speed"><option value="study">じっくり（思考確認）</option><option value="slow">ゆっくり</option><option value="normal">標準</option><option value="fast">速め</option></select>
@@ -98,7 +99,7 @@
     </main>
     <footer class="page-footer"><span>HOSHIKANJO <span>星勘定の決闘</span></span><span>80の洒落もの。あなたの22枚。</span><button id="restart-button" class="text-button">新しい対戦 ↻</button></footer>
   </div>
-  <div id="touch-toolbar" class="touch-toolbar" aria-label="タップ操作" hidden><button id="mobile-info" aria-expanded="false">情報・一時停止</button><button id="inspect-toggle" aria-pressed="false">詳細を見る</button><button id="touch-end-turn">ターン終了 →</button></div>
+  <div id="touch-toolbar" class="touch-toolbar" aria-label="タップ操作" hidden><button id="mobile-info" aria-expanded="false">情報・一時停止</button><button id="inspect-toggle" aria-pressed="false">詳細を見る</button><button id="touch-assist" disabled>✧ アシスト</button><button id="touch-end-turn">ターン終了 →</button></div>
   <div id="power-effect-layer" class="power-effect-layer" hidden aria-hidden="true"></div>
   <dialog id="audio-dialog" class="modal audio-modal" aria-labelledby="audio-title">
     <div class="modal-heading"><span class="eyebrow">SOUND · 星に音を添えて</span><button class="close-modal" aria-label="音設定を閉じる">×</button></div>
@@ -185,7 +186,7 @@
     <div class="draft-actions"><button id="draft-restart" class="text-button">最初からドラフト ↻</button><button id="draft-constructed" class="text-button">構築戦で対戦</button><button id="draft-start" class="primary-button" hidden>このデッキで対戦 →</button></div>
     <p class="save-help">ドラフトはこのページを開いている間だけ保持されます。閉じると進行を一時停止。完成デッキでの再戦もできます。</p>
   </dialog>
-  <dialog id="discover-dialog" class="modal discover-modal" aria-labelledby="discover-title"><div class="discover-actions"><span class="eyebrow">DISCOVER · CHOOSE ONE</span><button id="discover-board" class="editor-button">盤面を見る ⇄</button></div><h2 id="discover-title">星い一枚、見つけました。</h2><p class="dialog-intro">3候補から1枚を手札に加えます。選択に追加マナは不要。同じターンに使用できます。</p><div id="discover-offers" class="draft-offers" role="group" aria-label="発見するカードの候補"></div><p class="discover-note">ほかの2枚は消えます。手札が10枚の場合は選んだカードを失います。</p><p class="discover-view-note">候補を残したまま盤面を確認できます。「発見に戻る」で選択を再開します。</p><button id="discover-restart" class="text-button">新しい対戦 ↻</button></dialog>
+  <dialog id="discover-dialog" class="modal discover-modal" aria-labelledby="discover-title"><div class="discover-actions"><span class="eyebrow">DISCOVER · CHOOSE ONE</span><button id="discover-assist" class="editor-button">✧ アシスト</button><button id="discover-board" class="editor-button">盤面を見る ⇄</button></div><h2 id="discover-title">星い一枚、見つけました。</h2><p class="dialog-intro">3候補から1枚を手札に加えます。選択に追加マナは不要。同じターンに使用できます。</p><p id="discover-assist-message" class="assist-discovery-message" role="status" hidden></p><div id="discover-offers" class="draft-offers" role="group" aria-label="発見するカードの候補"></div><p class="discover-note">ほかの2枚は消えます。手札が10枚の場合は選んだカードを失います。</p><p class="discover-view-note">候補を残したまま盤面を確認できます。「発見に戻る」で選択を再開します。</p><button id="discover-restart" class="text-button">新しい対戦 ↻</button></dialog>
   <dialog id="watch-dialog" class="modal watch-modal" aria-labelledby="watch-title">
     <div class="modal-heading"><span class="eyebrow">CPU vs CPU</span><button class="close-modal" aria-label="観戦設定を閉じる">×</button></div>
     <h2 id="watch-title">手出し無用の、手合わせ見物。</h2><p>双方の手札とCPUの評価を公開して観戦します。CPU自身は相手の非公開情報を使いません。先後は毎回抽選、初手交換も自動です。</p>

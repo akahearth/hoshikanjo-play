@@ -2412,3 +2412,29 @@ button { touch-action:manipulation; }
 .library-actions button { min-height:44px; }
 .history-status { color:#d7c78f; }
 #history-export-json { width:100%; height:180px; resize:vertical; padding:10px; color:#dce6d8; background:#102b2b; font:11px/1.5 monospace; box-sizing:border-box; }
+
+/* 手動の一手アシスト。盤面の中央に操作順、元と対象に番号付きの輪郭。 */
+.battle-divider { position:relative; }
+.assist-panel { position:absolute; z-index:8; inset-inline:0; top:50%; transform:translateY(-50%); display:flex; align-items:center; gap:6px; padding:5px 9px; background:#123936f5; border:1px solid #f2d180; border-radius:8px; box-shadow:0 4px 16px #0007; }
+.assist-panel>div { flex:1; min-width:0; }
+.assist-panel strong { display:block; color:#ffe2a0; font-size:12px; line-height:1.5; }
+.assist-panel p { margin:2px 0 0; font-size:11px; line-height:1.5; color:#def1e5; }
+#assist-dismiss { min-width:36px; min-height:40px; font-size:19px; }
+.has-assist .turn-banner { visibility:hidden; }
+.assist-button { width:100%; margin:8px 0; min-height:44px; }
+.assist-source,.assist-target { position:relative; outline:3px solid #ffdc7e!important; outline-offset:2px; box-shadow:0 0 16px #ffcf5966!important; }
+.assist-target { outline-color:#69e3ff!important; box-shadow:0 0 16px #45ddff66!important; }
+.assist-source::after,.assist-target::after { content:attr(data-assist-label); position:absolute; z-index:12; top:18px; right:0; padding:3px 5px; border-radius:4px; background:#ffe1a0; color:#172e28; font:bold 10px/1.4 sans-serif; white-space:nowrap; pointer-events:none; }
+.assist-target::after { background:#80ebff; }
+.hero.assist-target::after,.equipped-weapon.assist-source::after,#hero-power.assist-source::after,#end-turn.assist-source::after,#touch-end-turn.assist-source::after { top:-9px; right:2px; }
+.assist-discovery-message { padding:8px 10px; border:1px solid #edcc7b; color:#ffe2a0; background:#173b33; font-size:12px; line-height:1.7; }
+.discover-actions { flex-wrap:wrap; gap:8px; }
+@media (max-width:1050px),(max-height:760px) and (pointer:coarse) {
+ .touch-toolbar button { min-width:0; }
+ #mobile-info { flex:1.25; }
+ .assist-panel { padding:4px 6px; }
+ .assist-panel strong { font-size:10px; }
+ .assist-panel p { font-size:9px; }
+ #assist-dismiss { min-width:30px; min-height:40px; }
+ .assist-source::after,.assist-target::after { font-size:8px; padding:2px 3px; }
+}

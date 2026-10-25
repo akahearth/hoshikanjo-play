@@ -60,6 +60,36 @@
   let gameEpoch = 0;
   let cpuSteps = 0;
   let resultShown = false;
+  let assistInput=null,assistView={status:'idle'};
+  const assist=SeikanAssist.createAssist({onChange(){assistView=assist.get();if(state)render();if(assistView.status==='ready')revealAssistSource();}});
+  function clearAssist(){assistInput=null;if(assistView.status!=='idle')assist.cancel();}
+  const assistAllowed=()=>!atStart&&!spectator&&!busy&&SeikanAssist.available(state)&&!Array.from(document.querySelectorAll('dialog[open]')).some(d=>d.id!=='discover-dialog');
+  function assistMarker(kind,id){return assistInput===state&&assistView.status==='ready'?assistView.proposal.markers.find(m=>m.kind===kind&&m.id===id):null;}
+  function assistClass(kind,id){const m=assistMarker(kind,id);return m?' assist-'+m.role:'';}
+  function assistAttributes(kind,id){const m=assistMarker(kind,id);return m?` data-assist-label="${m.label}" aria-describedby="assist-description"`:'';}
+  function revealAssistSource(){
+    const m=assistView.proposal.markers.find(m=>m.role==='source'&&['card','choice'].includes(m.kind));if(!m)return;
+    const element=document.querySelector(`[data-${m.kind==='card'?'card':'discover'}="${m.id}"]`),container=$(m.kind==='card'?'hand':'discover-offers');if(!element)return;
+    const rect=element.getBoundingClientRect(),bounds=container.getBoundingClientRect();container.scrollLeft+=(rect.left??rect.x)-(bounds.left??bounds.x)-(bounds.width-rect.width)/2;
+  }
+  function renderAssist(){
+    const eligible=assistAllowed(),thinking=assistView.status==='thinking',proposal=assistInput===state&&assistView.status==='ready'?assistView.proposal:null;
+    for(const id of ['assist-button','touch-assist','discover-assist']){$(id).disabled=!eligible;$(id).textContent=thinking?'検討中 ×':id==='assist-button'?'✧ アシスト（達人）':'✧ アシスト';$(id).setAttribute('aria-pressed',String(thinking||!!proposal));}
+    const visible=!atStart&&!spectator&&!busy&&state.active==='player'&&(thinking||proposal||assistView.status==='error');
+    $('assist-panel').hidden=!visible||choosingDiscovery()&&!viewingDiscoveryBoard();document.body.classList.toggle('has-assist',!!visible);
+    $('assist-title').textContent=thinking?'達人が次の一手を検討中…':proposal?`推奨：${proposal.title}`:'アシスト';
+    $('assist-description').textContent=thinking?'操作できます。もう一度押すと取り消し。':proposal?`${viewingDiscoveryBoard()&&proposal.action.type==='choose'?'発見に戻って、':''}${proposal.instruction}${proposal.winning?'（確定勝利の手順あり）':proposal.timeLimited?'（時間内の探索候補）':''}`:assistView.message||'';
+    $('discover-assist-message').hidden=!visible;$('discover-assist-message').textContent=$('assist-title').textContent+' / '+$('assist-description').textContent;
+    for(const id of ['hero-power','weapon-attack','enemy-hero','player-hero','end-turn','touch-end-turn']){const m=proposal?.markers.find(m=>m.kind==='control'&&m.id===id);$(id).classList.toggle('assist-source',!!m&&m.role==='source');$(id).classList.toggle('assist-target',!!m&&m.role==='target');$(id).dataset.assistLabel=m?.label||'';}
+  }
+  async function requestAssist(){
+    if(assistView.status==='thinking'){clearAssist();return;}if(!assistAllowed())return;
+    selected=null;pendingCard=null;pendingPower=false;inspecting=false;
+    const input=state,epoch=gameEpoch;assistInput=input;
+    await assist.request(input,{isCurrent:()=>state===input&&epoch===gameEpoch&&assistAllowed(),yieldControl:()=>playback.wait(0)});
+  }
+  for(const id of ['assist-button','touch-assist','discover-assist'])$(id).addEventListener('click',()=>void requestAssist());
+  $('assist-dismiss').addEventListener('click',clearAssist);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const powerEffects = SeikanPowerEffects.createPowerEffects({ document, window, resolveElement:entityElement, reducedMotion });
   const automated = () => !atStart&&(spectator || state?.active==='cpu');
@@ -83,6 +113,7 @@
       `<span class="ability-badge ability-${key}" title="${KEYWORDS[key].name}：${KEYWORDS[key].description}">${KEYWORDS[key].name}</span>`).join('') + (traits.classes.includes('trait-death') ? '<span class="ability-badge ability-death">死亡時</span>' : '')+(unit.silenced?'<span class="ability-badge ability-silence">沈黙</span>':'');
   }
   function cardMarkup(card, uid, mode = 'hand') {
+    const assistKind=mode==='discover'?'choice':mode==='hand'?'card':'none';
     const detailMode=inspecting||viewingDiscoveryBoard();
     const reason = mode === 'hand' ? (detailMode ? null : spectator ? 'CPUが操作しています。' : busy ? '行動の表示が終わるまでお待ちください。' : canPlayCard(state, 'player', uid)) : null;
     const classes = mode === 'hand' ? (detailMode ? 'inspectable' : reason ? 'unavailable' : 'playable') : '';
@@ -90,14 +121,15 @@
     const stats = weapon ? `<span class="stat attack-stat">${card.attack}</span><span class="stat health-stat durability-stat">${card.durability}</span><span class="weapon-seal">⚒ 武器</span>` : spell ? '<span class="spell-seal">✧ 呪文</span>' : `<span class="stat attack-stat">${card.attack}</span><span class="stat health-stat">${card.health}</span>`;
     const hint = mode==='hand'&&detailMode ? 'クリックで詳細（カードは使いません）' : weapon ? 'クリックで装備' : spell ? (card.target ? 'クリックで対象を選択' : 'クリックで使用') : 'クリックで召喚';
     const description = `${card.name}、${card.cost}マナ、${weapon ? `武器、攻撃力${card.attack}、耐久${card.durability}` : spell ? '呪文' : `攻撃力${card.attack}、HP${card.health}`}${unique?'、逸品・構築は同名1枚':''}。${card.description}`;
-    return `<button class="card ${card.expansion?'expansion-card':''} ${classes} ${spell ? 'spell-card' : ''} ${weapon?'weapon-card':''} ${unique?'unique-card':''} skin-${card.tribe==='火の車団'?'ember':card.tribe==='月払い組'?'moon':card.tribe==='芽でたい森'?'grove':'star'} ${pendingCard === uid ? 'chosen-card' : ''}" data-card="${uid}" data-card-id="${card.id}" data-card-type="${card.type}" aria-label="${description}${reason ? reason : ''}" ${mode === 'hand' ? `aria-disabled="${Boolean(reason)}" aria-pressed="${pendingCard === uid}"` : ''} title="${mode === 'hand' ? (reason || hint + '。右クリックで詳細') : mode === 'opening' ? 'クリックで交換を選択・解除' : mode === 'draft' ? 'クリックでこのカードを獲得' : 'クリックで詳細'}"><span class="mana-cost">${card.cost}</span><span class="card-tribe">${spell ? '呪文 · ' : ''}${card.tribe}</span>${illustration(card, uid)}${unique?'<span class="rarity-label">✦ 逸品 · 構築1枚</span>':''}<span class="card-name">${card.name}</span><span class="card-description">${card.description}</span>${stats}</button>`;
+    return `<button class="card${assistClass(assistKind,uid)} ${card.expansion?'expansion-card':''} ${classes} ${spell ? 'spell-card' : ''} ${weapon?'weapon-card':''} ${unique?'unique-card':''} skin-${card.tribe==='火の車団'?'ember':card.tribe==='月払い組'?'moon':card.tribe==='芽でたい森'?'grove':'star'} ${pendingCard === uid ? 'chosen-card' : ''}" data-card="${uid}"${assistAttributes(assistKind,uid)} data-card-id="${card.id}" data-card-type="${card.type}" aria-label="${description}${reason ? reason : ''}" ${mode === 'hand' ? `aria-disabled="${Boolean(reason)}" aria-pressed="${pendingCard === uid}"` : ''} title="${mode === 'hand' ? (reason || hint + '。右クリックで詳細') : mode === 'opening' ? 'クリックで交換を選択・解除' : mode === 'draft' ? 'クリックでこのカードを獲得' : 'クリックで詳細'}"><span class="mana-cost">${card.cost}</span><span class="card-tribe">${spell ? '呪文 · ' : ''}${card.tribe}</span>${illustration(card, uid)}${unique?'<span class="rarity-label">✦ 逸品 · 構築1枚</span>':''}<span class="card-name">${card.name}</span><span class="card-description">${card.description}</span>${stats}</button>`;
   }
   function unitMarkup(unit, side) {
+    const assistKind='unit';
     const card = BY_ID[unit.cardId];
     const ready = side === 'player' && playerTurn() && unit.ready && unit.attack > 0;
     const traits = unitTraits(unit); const keywords = traits.labels.join('・');
     const shield = traits.shieldState === 'none' ? '' : `<span class="shield-label ${unit.shield ? 'ability-aegis' : ''}">${unit.shield ? '◎ 星護あり' : '星護消失'}</span>`;
-    return `<button class="unit ${traits.classes.join(' ')} ${ready ? 'ready' : ''} ${selected === unit.uid ? 'selected' : ''} ${isTarget(unit.uid) ? 'targetable' : ''} ${unit.shield ? 'shielded' : ''}" data-unit="${unit.uid}" data-side="${side}" data-card-id="${card.id}" data-shield="${traits.shieldState}" aria-label="${card.name}、攻撃力${unit.attack}、HP${unit.hp}。${keywords ? keywords + '。' : ''}${ready ? '攻撃可能' : side === 'player' ? 'このターンは攻撃できません' : '敵ユニット'}" ${side === 'player' ? `aria-pressed="${selected === unit.uid}"` : ''} title="${card.name}：現在 ${keywords || '能力なし'}。${unit.silenced?'沈黙中：元の能力は発動しません。':card.description}"><span class="trait-frame" aria-hidden="true"></span>${shield}${illustration(card, `board-${unit.uid}`)}<span class="unit-name">${card.name}</span><span class="unit-abilities">${badges(unit)}</span><span class="stat attack-stat">${unit.attack}</span><span class="stat health-stat ${unit.hp < unit.maxHp ? 'damaged' : ''}">${unit.hp}</span></button>`;
+    return `<button class="unit${assistClass(assistKind,unit.uid)} ${traits.classes.join(' ')} ${ready ? 'ready' : ''} ${selected === unit.uid ? 'selected' : ''} ${isTarget(unit.uid) ? 'targetable' : ''} ${unit.shield ? 'shielded' : ''}" data-unit="${unit.uid}"${assistAttributes(assistKind,unit.uid)} data-side="${side}" data-card-id="${card.id}" data-shield="${traits.shieldState}" aria-label="${card.name}、攻撃力${unit.attack}、HP${unit.hp}。${keywords ? keywords + '。' : ''}${ready ? '攻撃可能' : side === 'player' ? 'このターンは攻撃できません' : '敵ユニット'}" ${side === 'player' ? `aria-pressed="${selected === unit.uid}"` : ''} title="${card.name}：現在 ${keywords || '能力なし'}。${unit.silenced?'沈黙中：元の能力は発動しません。':card.description}"><span class="trait-frame" aria-hidden="true"></span>${shield}${illustration(card, `board-${unit.uid}`)}<span class="unit-name">${card.name}</span><span class="unit-abilities">${badges(unit)}</span><span class="stat attack-stat">${unit.attack}</span><span class="stat health-stat ${unit.hp < unit.maxHp ? 'damaged' : ''}">${unit.hp}</span></button>`;
   }
   function message(text, isError = false) { $('action-message').textContent = text; $('action-message').classList.toggle('error', isError); }
   function render() {
@@ -196,6 +228,7 @@
       $('discover-offers').innerHTML=state.choice.options.map(item=>cardMarkup(BY_ID[item.cardId],item.uid,'discover').replace('<button ',`<button data-discover="${item.uid}" `)).join('');
       if(!$('discover-dialog').open)$('discover-dialog').showModal();
     } else if($('discover-dialog').open)$('discover-dialog').close();
+    renderAssist();
   }
   function showResult() {
     if (!atStart && state.status === 'finished' && !resultShown) {
@@ -285,6 +318,7 @@
     if (busy) { message('いまの行動の表示が終わるまでお待ちください。', true); return false; }
     const result = applyAction(state, action);
     if (!result.ok) { message(result.message, true); return false; }
+    clearAssist();
     const epoch = gameEpoch;
     const description = describeAction(state, action, result);
     const before=state;
@@ -356,6 +390,7 @@
     } finally { if (epoch === gameEpoch) { cpuRunning = false; updatePlaybackControls(); } }
   }
   function newGame() {
+    clearAssist();
     discoveryBoard=false;discoveryKey=null;
     sound.reset('battle');audioPausedCpu=false;
     atStart=false;menuWasPaused=false;
@@ -446,6 +481,7 @@
     else message(editor.storageWarning() || '光る手札が出番待ち。手は抜かず、カードを出そう。結果は「いまの行動」で確認できます。', Boolean(editor.storageWarning()));
   }
   function cancelSelection() {
+    clearAssist();
     selected = null; pendingCard = null; pendingPower = false; render(); message('選択を解除しました。カードとマナは消費されません。');
   }
   function chooseTarget(id) {
@@ -458,6 +494,7 @@
     } else message('まず、手札の呪文か攻撃可能な自分のユニットを選んでください。', true);
   }
   function showDetail(id,side='player') {
+    clearAssist();
     const card = BY_ID[id];
     const deck=spectator&&side==='cpu'?watchConfig.cpu.deck:currentDeck;
     const keywordHelp = card.keywords.map(key => `<p><strong>${KEYWORDS[key].name}</strong>：${KEYWORDS[key].description}</p>`).join('');
@@ -476,6 +513,7 @@
     const reason = canPlayCard(state, 'player', uid);
     if (reason) { message(reason, true); return; }
     const card = BY_ID[element.dataset.cardId];
+    if(assistView.status==='thinking'||assistView.proposal?.action.type!=='play'||assistView.proposal.action.card!==uid)clearAssist();
     if (card.target) {
       selected = null; pendingPower = false; pendingCard = uid;
       const scroll = $('hand').scrollLeft; render(); $('hand').scrollLeft = scroll;
@@ -488,19 +526,21 @@
     if (!playerTurn()) { message(busy ? 'いまの行動の表示が終わるまでお待ちください。' : state.status === 'playing' ? '星よみ経理のターンです。少しお待ちください。' : '対戦は終了しています。新しい対戦を始められます。', true); return; }
     if (pendingPower || pendingCard || element.dataset.side === 'cpu') { chooseTarget(element.dataset.unit); return; }
     const unit = state.player.board.find(item => item.uid === element.dataset.unit);
+    if(assistView.status==='thinking'||assistView.proposal?.action.type!=='attack'||assistView.proposal.action.attacker!==unit?.uid)clearAssist();
     if (!unit.ready || unit.attack <= 0) { message(unit.attack <= 0 ? '攻撃力が0のユニットは攻撃できません。' : '召喚したターン・攻撃後は行動できません。速攻なら召喚直後に攻撃できます。', true); return; }
     selected = selected === unit.uid ? null : unit.uid; render();
     message(selected ? '光る敵をクリックして攻撃。挑発がいると先に倒す必要があります。' : '攻撃の選択を解除しました。');
     if (selected) findUnit(selected)?.focus({ preventScroll: true });
   });
-  $('inspect-toggle').addEventListener('click',()=>{if(viewingDiscoveryBoard()){message('カードやユニットをタップすると詳細を確認できます。「発見に戻る」で選択を再開します。');return;}inspecting=!inspecting;selected=null;pendingCard=null;pendingPower=false;render();message(inspecting?'詳細モード：カードやユニットをタップ。対戦操作へ戻るには下のボタンを押してください。':'対戦操作へ戻りました。');});
+  $('inspect-toggle').addEventListener('click',()=>{clearAssist();if(viewingDiscoveryBoard()){message('カードやユニットをタップすると詳細を確認できます。「発見に戻る」で選択を再開します。');return;}inspecting=!inspecting;selected=null;pendingCard=null;pendingPower=false;render();message(inspecting?'詳細モード：カードやユニットをタップ。対戦操作へ戻るには下のボタンを押してください。':'対戦操作へ戻りました。');});
   for(const id of ['enemy-hand','watch-top-hand'])$(id).addEventListener('click',event=>{const c=event.target.closest('[data-card-id]');if(spectator&&c)showDetail(c.dataset.cardId,'cpu');});
-  $('weapon-attack').addEventListener('click',()=>{if(!playerTurn()||canWeaponAttack(state,'player'))return;pendingCard=null;pendingPower=false;selected=selected==='player-hero'?null:'player-hero';render();message(selected?'武器で攻撃：光る敵を選んでください。ユニットからは反撃を受けます。':'武器の選択を解除しました。');});
+  $('weapon-attack').addEventListener('click',()=>{if(assistView.proposal?.action.type!=='weaponAttack')clearAssist();if(!playerTurn()||canWeaponAttack(state,'player'))return;pendingCard=null;pendingPower=false;selected=selected==='player-hero'?null:'player-hero';render();message(selected?'武器で攻撃：光る敵を選んでください。ユニットからは反撃を受けます。':'武器の選択を解除しました。');});
   $('enemy-hero').addEventListener('click', () => chooseTarget('cpu-hero'));
   $('player-hero').addEventListener('click', () => chooseTarget('player-hero'));
   $('cancel-selection').addEventListener('click', cancelSelection);
   $('hero-power').addEventListener('click', () => {
     if (pendingPower) { cancelSelection(); return; }
+    if(assistView.proposal?.action.type!=='power')clearAssist();
     const reason = canUsePower(state, 'player'); if (!playerTurn() || reason) return;
     selected = null; pendingCard = null; pendingPower = true; render();
     message(`「${BY_POWER[state.player.heroPower].name}」：光る対象を選んでください。選ぶまでマナは消費されません。`);
@@ -546,6 +586,7 @@
   });
   describeCpuSettings();
   function openCpuSettings() {
+    clearAssist();
     settingsPausedCpu = !atStart&&state?.active === 'cpu' && state.status === 'playing' && !playback.isPaused();
     if (settingsPausedCpu) { playback.pause(); updatePlaybackControls(); }
     $('cpu-settings-back').textContent=atStart?'スタートメニューへ':'対戦に戻る';
@@ -555,6 +596,7 @@
   }
   $('cpu-settings-button').addEventListener('click',openCpuSettings);
   function openAudioSettings(){
+    clearAssist();
     audioPausedCpu=!atStart&&state?.status==='playing'&&!playback.isPaused();
     if(audioPausedCpu){playback.pause();updatePlaybackControls();}
     renderAudioSettings();$('audio-dialog').showModal();
@@ -576,22 +618,23 @@
   });
   $('cpu-new-game').addEventListener('click',()=>atStart?newConstructedGame():newGame());
   $('restart-button').addEventListener('click', newGame); $('mobile-restart').addEventListener('click',newGame); $('rematch-button').addEventListener('click', newGame);
-  $('help-button').addEventListener('click', () => $('help-dialog').showModal());
+  $('help-button').addEventListener('click', () => {clearAssist();$('help-dialog').showModal();});
   function closeMobilePanels(){document.body.classList.remove('menu-open','info-open');$('mobile-menu').setAttribute('aria-expanded','false');$('mobile-info').setAttribute('aria-expanded','false');}
   $('mobile-menu').addEventListener('click',()=>{const open=!document.body.classList.contains('menu-open');closeMobilePanels();document.body.classList.toggle('menu-open',open);$('mobile-menu').setAttribute('aria-expanded',String(open));});
   $('mobile-info').addEventListener('click',()=>{const open=!document.body.classList.contains('info-open');closeMobilePanels();document.body.classList.toggle('info-open',open);$('mobile-info').setAttribute('aria-expanded',String(open));});
   $('mobile-info-close').addEventListener('click',closeMobilePanels);
   $('game-menu').addEventListener('click',closeMobilePanels);
-  $('collection-button').addEventListener('click', () => $('collection-dialog').showModal());
+  $('collection-button').addEventListener('click', () => {clearAssist();$('collection-dialog').showModal();});
   $('collection-grid').addEventListener('click', event => { const card = event.target.closest('[data-card-id]'); if (card) showDetail(card.dataset.cardId); });
   document.querySelectorAll('.close-modal').forEach(button => button.addEventListener('click', () => button.closest('dialog').close()));
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && (selected || pendingCard || pendingPower)) cancelSelection(); });
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!choosingDiscovery())clearAssist();});
   document.querySelector('.arena').addEventListener('contextmenu', event => {
     const card = event.target.closest('[data-card-id]'); if (!card) return;
     event.preventDefault(); showDetail(card.dataset.cardId);
   });
   const editor = SeikanDeckEditor.createEditor({ cardMarkup, onStart: newConstructedGame, onDetail: showDetail,
-    onOpen() { editorPausedCpu = !atStart&&state?.active === 'cpu' && state.status === 'playing' && !playback.isPaused(); if (editorPausedCpu) { playback.pause(); updatePlaybackControls(); } },
+    onOpen() { clearAssist();editorPausedCpu = !atStart&&state?.active === 'cpu' && state.status === 'playing' && !playback.isPaused(); if (editorPausedCpu) { playback.pause(); updatePlaybackControls(); } },
     onClose() { if (editorPausedCpu) { editorPausedCpu = false; if(!atStart)playback.resume(); updatePlaybackControls(); }if(atStart)updateStartMenu(); }
   });
   const arena = SeikanArenaEditor.createEditor({ cardMarkup, style:()=>cpuPreference.style,
@@ -601,7 +644,7 @@
       newGame();
     },
     onConstructed:newConstructedGame,
-    onOpen() { $('draft-difficulty').value=cpuPreference.difficulty;arenaPausedCpu=!atStart&&state?.active==='cpu'&&state.status==='playing'&&!playback.isPaused();if(arenaPausedCpu){playback.pause();updatePlaybackControls();} },
+    onOpen() { clearAssist();$('draft-difficulty').value=cpuPreference.difficulty;arenaPausedCpu=!atStart&&state?.active==='cpu'&&state.status==='playing'&&!playback.isPaused();if(arenaPausedCpu){playback.pause();updatePlaybackControls();} },
     onClose() { if(arenaPausedCpu){arenaPausedCpu=false;if(!atStart)playback.resume();updatePlaybackControls();}if(!atStart&&!resettingMatch&&state?.status==='mulligan')openMulligan(); }
   });
   $('arena-button').addEventListener('click',()=>arena.open());
@@ -610,6 +653,7 @@
   const viewer=createViewer({document,cardMarkup,illustration});
   const libraryPauses=new Map();
   function openLibrary(id){
+    clearAssist();
     if($(id).open)return;
     const resume=!atStart&&!!state&&!playback.isPaused();libraryPauses.set(id,resume);
     if(resume){playback.pause();updatePlaybackControls();}
@@ -652,7 +696,7 @@
     $('watch-'+side+'-deck').innerHTML=SeikanDecks.PRESETS.map(deck=>`<option value="${deck.id}">${deck.name}</option>`).join('');
     $('watch-'+side+'-deck').value=SeikanDecks.PRESETS[side==='player'?0:1].id;
   }
-  function openWatch(){
+  function openWatch(){clearAssist();
     watchOpening=!atStart&&state?.status==='mulligan';if($('mulligan-dialog').open)$('mulligan-dialog').close();
     watchPausedCpu=state?.status==='playing'&&automated()&&!playback.isPaused();if(watchPausedCpu){playback.pause();updatePlaybackControls();}
     $('watch-dialog').showModal();
@@ -691,6 +735,7 @@
     $('start-resume-note').textContent=state?`${spectator?'CPU同士の観戦':state.mode==='arena'?'アリーナ':'通常対戦'} · ${state.status==='mulligan'?'初手交換中':`ラウンド ${Math.ceil(state.turn/2)}`}`:'';
   }
   function openStartMenu(){
+    clearAssist();
     sound.reset('menu');
     if(!atStart){menuWasPaused=playback.isPaused();playback.pause();}
     atStart=true;closeMobilePanels();viewer.close();
