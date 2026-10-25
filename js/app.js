@@ -23,6 +23,10 @@
   let discoveryBoard=false,discoveryKey=null;
   let atStart=true,menuWasPaused=false;
   let recording=null;
+  let historyStorage;try{historyStorage=window.localStorage;}catch{}
+  const matchHistory=SeikanMatchHistory.createHistory(historyStorage);
+  let archivedRecording=null,matchSequence=0;
+  function persistCompleted(){if(recording?.finished&&archivedRecording!==recording){if(matchHistory.save(recording))archivedRecording=recording;}}
   let spectator=false;
   let watchPausedCpu=false;
   let watchOpening=false;
@@ -195,6 +199,8 @@
   }
   function showResult() {
     if (!atStart && state.status === 'finished' && !resultShown) {
+      persistCompleted();
+      $('result-history-status').textContent=matchHistory.warning()||'この対戦を履歴に保存しました（最新10試合）。';
       resultShown = true;
       const won = state.winner === 'player'; const draw = state.winner === 'draw';
       sound.reset('menu');sound.play(draw?'drawGame':won||spectator?'victory':'defeat');
@@ -294,6 +300,7 @@
       state = result.state;
       if(!atStart)sound.playAction(description,result.effects);
       recording.append(before,action,result,analysis,description);
+      persistCompleted();
       const handScroll = $('hand').scrollLeft; render(); $('hand').scrollLeft = handScroll;
       present(description, 'result'); animate(result.event, sourceRect, result.effects);
       if (!await playback.wait(resultDuration(paceKey, description)) || epoch !== gameEpoch) return false;
@@ -368,7 +375,8 @@
     const cpuDeck = spectator?watchConfig.cpu.deck:arenaMatch ? arenaMatch.cpu : SeikanDecks.PRESETS[Math.floor(Math.random() * SeikanDecks.PRESETS.length)];
     if(spectator)matchCpu={...watchConfig.cpu.settings};
     state = createGame(Math.random, { mode: spectator?watchConfig.mode:arenaMatch ? 'arena' : 'constructed', mulligan: true, playerDeck: currentDeck.cards, playerPower: currentDeck.heroPower, playerName: currentDeck.name, cpuDeck: cpuDeck.cards, cpuPower: cpuDeck.heroPower, cpuName: cpuDeck.name });
-    recording=createRecording(state,{spectator});$('live-thought').replaceChildren();
+    archivedRecording=null;
+    recording=createRecording(state,{spectator,matchId:`${Date.now().toString(36)}-${++matchSequence}-${Math.random().toString(36).slice(2,8)}`,startedAt:new Date().toISOString(),gameVersion:SeikanReleases.VERSION,mode:state.mode,cpu:{...matchCpu},...(spectator?{player:{...watchConfig.player.settings}}:{}),decks:{player:{name:currentDeck.name,cards:[...currentDeck.cards],heroPower:currentDeck.heroPower},cpu:{name:cpuDeck.name,cards:[...cpuDeck.cards],heroPower:cpuDeck.heroPower}},evaluationWeights:{cpu:{...SeikanAIWeights.forSettings(matchCpu.difficulty,matchCpu.style)},player:spectator?{...SeikanAIWeights.forSettings(watchConfig.player.settings.difficulty,watchConfig.player.settings.style)}:null}});$('live-thought').replaceChildren();
     if(spectator&&state.status==='mulligan')for(const side of ['cpu','player']){const action={type:'mulligan',actor:side,cards:mulliganCards(state,side)},result=applyAction(state,action);if(!result.ok)throw Error(result.message);recording.append(state,action,result);state=result.state;}
     resettingMatch = false; openingSelection.clear(); busy = false; activeActor = null; currentDescription = null;
     render();
@@ -600,6 +608,44 @@
   $('mulligan-arena').addEventListener('click',()=>{$('mulligan-dialog').close();arena.open();});
   $('deck-button').addEventListener('click', () => editor.open());
   const viewer=createViewer({document,cardMarkup,illustration});
+  const libraryPauses=new Map();
+  function openLibrary(id){
+    if($(id).open)return;
+    const resume=!atStart&&!!state&&!playback.isPaused();libraryPauses.set(id,resume);
+    if(resume){playback.pause();updatePlaybackControls();}
+    closeMobilePanels();$(id).showModal();
+  }
+  for(const id of ['history-dialog','updates-dialog'])$(id).addEventListener('close',()=>{const resume=libraryPauses.get(id);libraryPauses.delete(id);if(resume&&!atStart&&!resettingMatch){playback.resume();updatePlaybackControls();}});
+  function openUpdates(){
+    $('updates-version').textContent=`現在のバージョン：v${SeikanReleases.VERSION}`;$('updates-list').replaceChildren();
+    for(const release of SeikanReleases.HISTORY){const section=document.createElement('section'),title=document.createElement('h3'),list=document.createElement('ul');section.className='release-entry';title.textContent=`v${release.version} · ${release.title}`;section.append(title);for(const change of release.changes){const item=document.createElement('li');item.textContent=change;list.append(item);}section.append(list);$('updates-list').append(section);}openLibrary('updates-dialog');
+  }
+  function renderHistory(){
+    const list=matchHistory.list();$('history-list').replaceChildren();$('history-status').textContent=matchHistory.warning()||`${list.length} / 10試合を保存。再読み込み後もこの端末で振り返れます。`;
+    for(const id of ['history-export-all','history-show-json'])$(id).disabled=!list.length;
+    if(!list.length){const empty=document.createElement('p');empty.textContent='まだ終了した対戦がありません。対戦を終えると、ここに記録します。';$('history-list').append(empty);}
+    for(const {id,summary:s}of list){
+      const row=document.createElement('section'),title=document.createElement('h3'),detail=document.createElement('p'),actions=document.createElement('div');row.className='history-entry';actions.className='library-actions';
+      const winner=s.winner==='draw'?'引き分け':s.spectator?(s.winner==='player'?'CPU Aの勝利':'CPU Bの勝利'):(s.winner==='player'?'勝利':'敗北');
+      const date=new Date(s.savedAt);title.textContent=`${Number.isNaN(date.getTime())?'日時不明':date.toLocaleString('ja-JP')} · ${winner}`;
+      detail.textContent=`${s.mode==='arena'?'アリーナ':'通常戦'}${s.spectator?'・観戦':''} / ${Math.ceil(s.turns/2)}ラウンド・${s.actions}手 / v${s.gameVersion}`;
+      row.append(title);row.append(detail);
+      for(const [action,label]of [['view','振り返る'],['export','JSONを書き出す']]){const button=document.createElement('button');button.className='editor-button';button.textContent=label;button.dataset.historyId=id;button.dataset.historyAction=action;actions.append(button);}row.append(actions);$('history-list').append(row);
+    }
+  }
+  function openHistory(){$('history-export-json').hidden=true;$('history-export-json').value='';renderHistory();openLibrary('history-dialog');}
+  function allHistoryJSON(){return JSON.stringify({format:'hoshikanjo-match-bundle',schemaVersion:1,gameVersion:SeikanReleases.VERSION,exportedAt:new Date().toISOString(),matches:matchHistory.list().map(x=>{const r=matchHistory.get(x.id);return r?r.exportData():null;}).filter(Boolean)},null,2);}
+  function showExportJSON(json){openHistory();$('history-export-json').value=json;$('history-export-json').hidden=false;$('history-export-json').focus();$('history-export-json').select();$('history-status').textContent='JSONを選択しました。コピーして保存・共有できます。';}
+  function downloadMatch(json,name){
+    try{const url=URL.createObjectURL(new Blob([json],{type:'application/json;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);$('history-status').textContent='JSONを書き出しました。ブラウザのダウンロード先をご確認ください。';$('result-history-status').textContent='JSONを書き出しました。ブラウザのダウンロード先をご確認ください。';}
+    catch{showExportJSON(json);}
+  }
+  $('history-list').addEventListener('click',event=>{const button=event.target.closest('[data-history-action]');if(!button)return;const saved=matchHistory.get(button.dataset.historyId);if(!saved){renderHistory();return;}if(button.dataset.historyAction==='view')viewer.open(saved);else downloadMatch(JSON.stringify(saved.exportData(),null,2),'hoshikanjo-match-'+button.dataset.historyId+'.json');});
+  $('history-export-all').addEventListener('click',()=>downloadMatch(allHistoryJSON(),'hoshikanjo-matches.json'));
+  $('history-show-json').addEventListener('click',()=>showExportJSON(allHistoryJSON()));
+  $('result-export').addEventListener('click',()=>{if(recording?.finished)downloadMatch(JSON.stringify(recording.exportData(),null,2),'hoshikanjo-match.json');});
+  for(const id of ['start-history','history-button'])$(id).addEventListener('click',openHistory);
+  for(const id of ['start-updates','updates-button'])$(id).addEventListener('click',openUpdates);
   function openReview(){if(state.status!=='finished'||busy)return;if($('result-dialog').open)$('result-dialog').close();viewer.open(recording);}
   $('review-button').addEventListener('click',openReview);$('result-review').addEventListener('click',openReview);
   for(const side of ['player','cpu']){

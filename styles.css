@@ -2208,7 +2208,7 @@ button { touch-action:manipulation; }
 .start-card small { display:block; font-size:11px; line-height:1.8; color:#c4d3c1; margin-top:5px; }
 .start-card em { display:block; color:#90ad9a; font-size:10px; line-height:1.7; font-style:normal; margin-top:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .start-card b { color:var(--gold); font-weight:normal; }
-.start-tools { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+.start-tools { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
 .start-tools button { min-height:44px; padding:8px 4px; }
 .start-resume-row { display:flex; align-items:center; flex-wrap:wrap; justify-content:center; gap:8px 16px; padding:12px; border:1px solid #d5b97666; border-radius:8px; background:#233e32; }
 .start-resume-row p { font-size:11px; color:#beccb4; margin:0; }
@@ -2402,3 +2402,13 @@ button { touch-action:manipulation; }
 .discover-actions button { min-height:44px; }
 .discover-view-note { color:var(--muted); font-size:12px; line-height:1.7; margin:12px 0 0; }
 .discovery-board-view #touch-end-turn { color:#f3deb0; border-color:#ddc38c; background:#425741; }
+
+/* 更新履歴と、終了した10試合の帳面。 */
+.library-modal { width:min(760px,calc(100vw - 24px)); }
+.release-entry,.history-entry { padding:14px 0; border-top:1px solid #9caf8455; }
+.release-entry h3,.history-entry h3 { font:17px/1.7 var(--serif); color:var(--gold); margin:0 0 7px; overflow-wrap:anywhere; }
+.release-entry li,.history-entry p,.library-modal>p { font-size:13px; line-height:1.9; }
+.library-actions { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+.library-actions button { min-height:44px; }
+.history-status { color:#d7c78f; }
+#history-export-json { width:100%; height:180px; resize:vertical; padding:10px; color:#dce6d8; background:#102b2b; font:11px/1.5 monospace; box-sizing:border-box; }

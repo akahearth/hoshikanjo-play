@@ -5,6 +5,7 @@
   const { legalActions, applyAction, other, RULES } = commonJS ? require('./engine.js') : root.SeikanEngine;
   const { hasKeyword } = commonJS ? require('./effects.js') : root.SeikanEffects;
   const { cardValue } = commonJS ? require('./strategy.js') : root.SeikanStrategy;
+  const weightsAPI = commonJS ? require('./ai-weights.js') : root.SeikanAIWeights;
   const intrinsicValues=new Map();
   const intrinsic=card=>{if(!intrinsicValues.has(card.id))intrinsicValues.set(card.id,cardValue(card));return intrinsicValues.get(card.id);};
   const DIFFICULTIES = Object.freeze({
@@ -106,7 +107,7 @@
     const owner = state[side]; const enemy = state[other(side)];
     const boardScore = player => player.board.reduce((sum, unit) => {
       const opponent=player===owner?enemy:owner;
-      const death = !unit.silenced ? BY_ID[unit.cardId].effects.filter(e=>e.trigger==='death').reduce((v,e)=>v+(e.type==='draw'?Math.min(e.amount,player.deck.length,10-player.hand.length)*.6:e.type==='heal'?Math.min(e.amount,Math.max(1,player.maxHp-player.hp))*.25:.4),0) : 0;
+      const death = !unit.silenced ? BY_ID[unit.cardId].effects.filter(e=>e.trigger==='death').reduce((v,e)=>v+(e.type==='draw'?Math.min(e.amount,player.deck.length,10-player.hand.length)*.6*style.weights.hand:e.type==='heal'?Math.min(e.amount,Math.max(1,player.maxHp-player.hp))*.25*style.weights.healing:.4),0) : 0;
       const shield=style.advanced&&unit.shield&&opponent.board.some(u=>u.attack>0)?Math.min(1.6,unit.attack*.18):0;
       const poison=style.advanced&&unit.attack>0&&hasKeyword(unit,'poison')?Math.min(2,Math.max(0,...opponent.board.map(u=>u.hp-unit.attack))*.18):0;
       const passive=style.advanced&&unit.attack===0?unit.hp*style.health*(hasKeyword(unit,'taunt') ? .15 : .4):0;
@@ -116,11 +117,11 @@
       + owner.hp * style.ownHp - Math.max(0, 10 - owner.hp) * style.danger
       - enemy.hp * style.enemyHp + Math.max(0, 8 - enemy.hp) * .3
       // 終了済みターンの余りマナは持ち越せない。使い残しを有利と数えない。
-      + owner.hand.length * 1.5 - enemy.hand.length * 1.1 + (state.active===side?owner.mana*.03:0)
+      + (owner.hand.length * 1.5 - enemy.hand.length * 1.1)*style.weights.hand + (state.active===side?owner.mana*.03:0)
       + (owner.weapon?owner.weapon.attack*Math.min(3,owner.weapon.durability)*.6:0) - (enemy.weapon?enemy.weapon.attack*Math.min(3,enemy.weapon.durability)*.6:0) + (owner.planningValue||0)-(enemy.planningValue||0);
     if(!style.advanced)return base;
     const danger=publicDamage(enemy,owner,state.active===other(side));
-    const lethalRisk=danger>=owner.hp?65:Math.max(0,danger-owner.hp+5)*1.7;
+    const lethalRisk=(danger>=owner.hp?65:Math.max(0,danger-owner.hp+5)*1.7)*style.weights.danger;
     const handQuality=owner.hand.reduce((sum,c)=>{
       if(c.unknown||c.uid.startsWith('fog-'))return sum+(c.discovered ? .45 : 0);
       const card=BY_ID[c.cardId],nextMana=Math.min(10,owner.maxMana+1);
@@ -132,7 +133,7 @@
       return sum+value;
     },0);
     const shieldQuality=owner.board.reduce((sum,u)=>sum+(u.shield&&enemy.board.length?Math.min(1,u.attack*.1):0),0)-enemy.board.reduce((sum,u)=>sum+(u.shield&&owner.board.length?Math.min(1,u.attack*.1):0),0);
-    return base-lethalRisk+handQuality+shieldQuality+(owner.board.length-enemy.board.length)*.5+Math.max(0,10-enemy.hp)*.2;
+    return base-lethalRisk+handQuality*style.weights.hand+shieldQuality+(owner.board.length-enemy.board.length)*.5+Math.max(0,10-enemy.hp)*.2;
   }
   function positionKey(state) {
     return JSON.stringify([state.active,state.first,state.turn,state.nextId,state.entropy,state.status, state.winner,state.choice,state.effectQueue, ...['player', 'cpu'].map(side => {
@@ -379,7 +380,10 @@
     return yield* visit(state,null,0);
   }
   function* search(input, side, options) {
-    const settings = normalizeOptions(options); const config = DIFFICULTIES[settings.difficulty]; const style = {...STYLES[settings.style],advanced:settings.difficulty!=='easy'};
+    const settings = normalizeOptions(options); const config = DIFFICULTIES[settings.difficulty];
+    const weights=weightsAPI.normalize(options?.weights,weightsAPI.forSettings(settings.difficulty,settings.style));
+    const style = {...STYLES[settings.style],advanced:settings.difficulty!=='easy',weights};
+    for(const key of ['attack','health','shield','ownHp','enemyHp','danger'])style[key]*=weights[key];
     const stats = { ...settings, nodes: 0, visits:0, visitLimit:(config.ownNodes+config.replies*config.replyNodes)*4, action: null };
     // 判断に用いた数値だけを任意で記録する。再探索や秘密情報の参照はしない。
     if(options?.trace)stats.trace={method:'reply',baseline:null,candidates:[]};

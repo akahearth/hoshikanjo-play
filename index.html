@@ -6,28 +6,31 @@
   <meta name="theme-color" content="#102b2b">
   <meta name="description" content="勝ち星、いただきます。星と精霊の洒落が効いた、オフラインで遊べるターン制カードゲーム。">
   <title>星勘定の決闘 | HOSHIKANJO</title>
-  <link rel="icon" href="assets/favicon.svg?v=2.6.0-36309c178097" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon.svg?v=2.7.0-36309c178097" type="image/svg+xml">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="星勘定">
-  <link rel="manifest" href="manifest.webmanifest?v=2.6.0-871f04ed9ad1">
-  <link rel="stylesheet" href="styles.css?v=2.6.0-44ad53dd5544">
-  <script defer src="js/cards.js?v=2.6.0-2d9ef147d00a"></script>
-  <script defer src="js/strategy.js?v=2.6.0-b14e27de10a0"></script>
-  <script defer src="js/heroes.js?v=2.6.0-e0ec92a3efbd"></script>
-  <script defer src="js/decks.js?v=2.6.0-e193b59a7436"></script>
-  <script defer src="js/arena.js?v=2.6.0-1d44172dac3b"></script>
-  <script defer src="js/effects.js?v=2.6.0-9407767addfa"></script>
-  <script defer src="js/engine.js?v=2.6.0-5ab255b7799d"></script>
-  <script defer src="js/ai.js?v=2.6.0-dc087edb18a4"></script>
-  <script defer src="js/art.js?v=2.6.0-39dc8f5baf2e"></script>
-  <script defer src="js/traits.js?v=2.6.0-a11a8cc20e8a"></script>
-  <script defer src="js/playback.js?v=2.6.0-e41084e7ac26"></script>
-  <script defer src="js/review.js?v=2.6.0-6b0feb3b5135"></script>
-  <script defer src="js/power-effects.js?v=2.6.0-10b2b14c74b2"></script>
-  <script defer src="js/deck-editor.js?v=2.6.0-b8cb17af545b"></script>
-  <script defer src="js/arena-editor.js?v=2.6.0-b43174a2fcff"></script>
-  <script defer src="js/audio.js?v=2.6.0-ecd4d1af588e"></script>
-  <script defer src="js/app.js?v=2.6.0-7ce89009317c"></script>
+  <link rel="manifest" href="manifest.webmanifest?v=2.7.0-871f04ed9ad1">
+  <link rel="stylesheet" href="styles.css?v=2.7.0-4d0aad20da22">
+  <script defer src="js/cards.js?v=2.7.0-2d9ef147d00a"></script>
+  <script defer src="js/strategy.js?v=2.7.0-b14e27de10a0"></script>
+  <script defer src="js/heroes.js?v=2.7.0-e0ec92a3efbd"></script>
+  <script defer src="js/decks.js?v=2.7.0-e193b59a7436"></script>
+  <script defer src="js/arena.js?v=2.7.0-1d44172dac3b"></script>
+  <script defer src="js/effects.js?v=2.7.0-9407767addfa"></script>
+  <script defer src="js/engine.js?v=2.7.0-5ab255b7799d"></script>
+  <script defer src="js/ai-weights.js?v=2.7.0-7646598501fd"></script>
+  <script defer src="js/ai.js?v=2.7.0-5eeaeb02aa90"></script>
+  <script defer src="js/art.js?v=2.7.0-39dc8f5baf2e"></script>
+  <script defer src="js/traits.js?v=2.7.0-a11a8cc20e8a"></script>
+  <script defer src="js/playback.js?v=2.7.0-e41084e7ac26"></script>
+  <script defer src="js/review.js?v=2.7.0-a24fb29ecf16"></script>
+  <script defer src="js/match-history.js?v=2.7.0-797d7c346537"></script>
+  <script defer src="js/releases.js?v=2.7.0-7a6806e034a7"></script>
+  <script defer src="js/power-effects.js?v=2.7.0-10b2b14c74b2"></script>
+  <script defer src="js/deck-editor.js?v=2.7.0-b8cb17af545b"></script>
+  <script defer src="js/arena-editor.js?v=2.7.0-b43174a2fcff"></script>
+  <script defer src="js/audio.js?v=2.7.0-ecd4d1af588e"></script>
+  <script defer src="js/app.js?v=2.7.0-1623a1f4e7f8"></script>
 </head>
 <body>
   <main id="start-screen" class="start-screen" aria-labelledby="start-title">
@@ -39,14 +42,14 @@
       <button id="start-arena" class="start-card"><span class="start-icon" aria-hidden="true">❖</span><span><strong>アリーナ</strong><small>自分だけの3候補から22枚を選んで対戦</small><em>同じページ内でピックを再開できます</em></span><b aria-hidden="true">→</b></button>
       <button id="start-watch" class="start-card"><span class="start-icon" aria-hidden="true">◉</span><span><strong>CPU同士を観戦</strong><small>構築戦・アリーナを選んで手合わせ見物</small><em>両手札とCPUの判断を確認</em></span><b aria-hidden="true">→</b></button>
     </div>
-    <div class="start-tools" role="group" aria-label="準備と設定"><button id="start-deck" class="editor-button">デッキ編集</button><button id="start-collection" class="editor-button">カード一覧</button><button id="start-settings" class="editor-button">CPU設定</button><button id="start-audio" class="editor-button">♫ 音設定</button><button id="start-help" class="editor-button">遊び方</button></div>
-    <p class="start-footnote">デッキと設定は、この端末のブラウザ内に保存されます。<span>v2.6.0</span></p>
+    <div class="start-tools" role="group" aria-label="準備と設定"><button id="start-deck" class="editor-button">デッキ編集</button><button id="start-collection" class="editor-button">カード一覧</button><button id="start-settings" class="editor-button">CPU設定</button><button id="start-audio" class="editor-button">♫ 音設定</button><button id="start-help" class="editor-button">遊び方</button><button id="start-history" class="editor-button">対戦履歴（10件）</button><button id="start-updates" class="editor-button">更新履歴</button></div>
+    <p class="start-footnote">デッキと設定は、この端末のブラウザ内に保存されます。<span>v2.7.0</span></p>
   </main>
   <div id="game-shell" class="app-shell" hidden>
     <header class="masthead">
       <a id="home-logo" class="brand" href="index.html" aria-label="星勘定の決闘 ホーム"><span class="brand-mark" aria-hidden="true">✧</span><span><span class="brand-title">星勘定の決闘</span><span class="brand-sub">HOSHIKANJO &nbsp; / &nbsp; CARD DUEL</span></span></a>
       <div class="header-caption">勝ち星、いただきます。</div>
-      <button id="mobile-menu" class="mobile-control" aria-expanded="false" aria-controls="game-menu">メニュー ☰</button><nav id="game-menu" aria-label="ゲームメニュー"><button class="text-button" id="home-button">スタートメニュー</button><button class="text-button" id="watch-button">CPU同士を観戦</button><button class="text-button arena-entry" id="arena-button">✧ アリーナ</button><button class="text-button" id="cpu-settings-button">CPU設定</button><button class="text-button" id="audio-button">♫ 音設定</button><button class="text-button" id="deck-button">デッキ編集 <span>↗</span></button><button class="text-button" id="collection-button">カード一覧</button><button class="text-button" id="help-button"><span class="question-mark">?</span> 遊び方</button><button class="mobile-control" id="mobile-restart">新しい対戦 ↻</button></nav>
+      <button id="mobile-menu" class="mobile-control" aria-expanded="false" aria-controls="game-menu">メニュー ☰</button><nav id="game-menu" aria-label="ゲームメニュー"><button class="text-button" id="home-button">スタートメニュー</button><button class="text-button" id="watch-button">CPU同士を観戦</button><button class="text-button arena-entry" id="arena-button">✧ アリーナ</button><button class="text-button" id="cpu-settings-button">CPU設定</button><button class="text-button" id="audio-button">♫ 音設定</button><button class="text-button" id="deck-button">デッキ編集 <span>↗</span></button><button class="text-button" id="collection-button">カード一覧</button><button class="text-button" id="history-button">対戦履歴</button><button class="text-button" id="updates-button">更新履歴</button><button class="text-button" id="help-button"><span class="question-mark">?</span> 遊び方</button><button class="mobile-control" id="mobile-restart">新しい対戦 ↻</button></nav>
     </header>
     <main class="game-layout">
       <section class="arena" aria-label="対戦盤面">
@@ -159,7 +162,7 @@
     <div class="deck-editor-footer"><div><p id="deck-validation"></p><small class="save-help">保存はこのブラウザ内。今の対戦は変更しません。</small></div><div class="deck-save-row"><button id="deck-delete" class="text-button">削除</button><button id="deck-export" class="editor-button">ファイル書出</button><button id="deck-save" class="editor-button">保存</button></div><button id="deck-start" class="primary-button">保存して対戦開始 →</button></div>
   </dialog>
   <dialog id="detail-dialog" class="modal detail-modal"><div class="modal-heading"><span class="eyebrow">CARD DETAILS</span><button class="close-modal" aria-label="閉じる">×</button></div><div id="card-detail"></div></dialog>
-  <dialog id="result-dialog" class="modal result-modal"><div class="modal-heading"><span class="eyebrow">DUEL COMPLETE</span><button class="close-modal" aria-label="盤面を見る">×</button></div><div class="result-star" aria-hidden="true">✧</div><span class="eyebrow" id="result-english"></span><h2 id="result-title"></h2><p id="result-description"></p><p class="result-stat" id="result-stat"></p><button class="primary-button" id="rematch-button">もう一度、星を巡る ↻</button><button class="editor-button" id="result-review">この対戦を振り返る</button><button class="text-button close-modal">盤面を見る</button></dialog>
+  <dialog id="result-dialog" class="modal result-modal"><div class="modal-heading"><span class="eyebrow">DUEL COMPLETE</span><button class="close-modal" aria-label="盤面を見る">×</button></div><div class="result-star" aria-hidden="true">✧</div><span class="eyebrow" id="result-english"></span><h2 id="result-title"></h2><p id="result-description"></p><p class="result-stat" id="result-stat"></p><button class="primary-button" id="rematch-button">もう一度、星を巡る ↻</button><button class="editor-button" id="result-review">この対戦を振り返る</button><button class="editor-button" id="result-export">この対戦をJSONに書き出す</button><p id="result-history-status" class="history-status" role="status"></p><button class="text-button close-modal">盤面を見る</button></dialog>
   <dialog id="mulligan-dialog" class="modal opening-modal" aria-labelledby="mulligan-title">
     <div class="modal-heading"><span class="eyebrow">OPENING HAND</span><button id="mulligan-watch" class="text-button">CPU同士を観戦</button><button id="mulligan-arena" class="text-button">アリーナへ ↗</button></div>
     <h2 id="mulligan-title">手始めに、手の内チェック。</h2><p id="mulligan-order" class="dialog-intro"></p>
@@ -193,5 +196,7 @@
   </dialog>
   <dialog id="review-dialog" class="modal review-modal" aria-labelledby="review-title"><div class="modal-heading"><span class="eyebrow">MATCH REVIEW</span><button class="close-modal" aria-label="振り返りを閉じる">×</button></div><h2 id="review-title">あの一手、ひと手間かけて振り返る。</h2><p>実際の盤面と、行動時にCPUが比較した評価の記録です。両者の手札を表示します。</p><div class="review-controls"><button id="review-prev" class="editor-button">← 前の手</button><button id="review-next" class="editor-button">次の手 →</button><button id="review-auto" class="editor-button">自動再生 ▶</button><label>速度<select id="review-speed"><option value="study">じっくり</option><option value="slow" selected>ゆっくり</option><option value="normal">標準</option><option value="fast">速め</option></select></label><label>盤面<select id="review-phase"><option value="after">行動後</option><option value="before">行動前</option></select></label></div><input id="review-slider" type="range" min="0" max="0" value="0" aria-label="振り返る手順"><p id="review-position" role="status"></p><strong id="review-actor"></strong><p id="review-turn"></p><div class="review-layout"><div id="review-board"></div><section class="thought-panel"><h3>この手の判断と結果</h3><div id="review-thought"></div><ul id="review-changes"></ul></section></div></dialog>
   <noscript>このゲームを遊ぶには、ブラウザのJavaScriptを有効にしてください。</noscript>
+  <dialog id="updates-dialog" class="modal library-modal" aria-labelledby="updates-title"><div class="modal-heading"><span class="eyebrow">UPDATE LEDGER</span><button class="close-modal" aria-label="更新履歴を閉じる">×</button></div><h2 id="updates-title">星勘定の歩み</h2><p id="updates-version"></p><div id="updates-list"></div></dialog>
+  <dialog id="history-dialog" class="modal library-modal" aria-labelledby="history-title"><div class="modal-heading"><span class="eyebrow">MATCH LEDGER</span><button class="close-modal" aria-label="対戦履歴を閉じる">×</button></div><h2 id="history-title">対戦の帳面、十番勝負。</h2><p>終了した通常戦・アリーナ・観戦を新しい順に10試合保存します。11試合目から古い記録を入れ替えます。</p><p>JSONには両者の手札・各手の盤面・CPU思考を含みます。書き出したファイルをフィードバックに使えます。自動送信はしません。</p><p id="history-status" class="history-status" role="status"></p><div class="library-actions"><button id="history-export-all" class="editor-button">全履歴をJSONに書き出す</button><button id="history-show-json" class="editor-button">JSONを表示・コピー</button></div><textarea id="history-export-json" aria-label="書き出す対戦JSON" readonly spellcheck="false" hidden></textarea><div id="history-list"></div></dialog>
 </body>
 </html>

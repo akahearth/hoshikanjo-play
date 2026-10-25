@@ -33,13 +33,29 @@
       append(before,action,result,analysis=null,description=null){
         if(!result.ok)return false;
         const changes=description?copy(description.changes):action.type==='mulligan'?['交換：'+(before[action.actor].hand.filter(c=>action.cards.includes(c.uid)).map(c=>BY_ID[c.cardId].name).join(' / ')||'なし'),'キープ：'+(before[action.actor].hand.filter(c=>!action.cards.includes(c.uid)).map(c=>BY_ID[c.cardId].name).join(' / ')||'なし')]:[];
-        entries.push({state:snapshot(result.state),before:snapshot(before),action:copy(action),title:actionName(before,action),analysis:analysis?copy(analysis):null,changes});return true;
+        entries.push({state:snapshot(result.state),before:snapshot(before),action:copy(action),title:actionName(before,action),analysis:analysis?copy({...analysis,action:analysis.action||action}):null,changes});return true;
       },
       get:index=>entries[index]?copy(entries[index]):null,
       get length(){return entries.length;},
       get finished(){return entries.at(-1).state.status==='finished';},
-      get metadata(){return copy(meta);}
+      get metadata(){return copy(meta);},
+      exportData:()=>({format:'hoshikanjo-match',schemaVersion:1,metadata:copy(meta),entries:copy(entries)})
     };
+  }
+  function restoreRecording(data){
+    if(data?.format!=='hoshikanjo-match'||data.schemaVersion!==1||!Array.isArray(data.entries)||data.entries.length<2||data.entries.length>5000)throw Error('対戦記録の形式が不正です');
+    function validState(s){
+      if(!s||!['mulligan','playing','finished'].includes(s.status)||!['player','cpu'].includes(s.active)||!Number.isFinite(s.turn))return false;
+      if(s.choice&&(!['player','cpu'].includes(s.choice.side)||!Array.isArray(s.choice.options)||s.choice.options.length!==3||s.choice.options.some(c=>!BY_ID[c.cardId]||typeof c.uid!=='string')))return false;
+      return ['player','cpu'].every(side=>{const p=s[side];return p&&Number.isFinite(p.hp)&&Number.isFinite(p.mana)&&BY_POWER[p.heroPower]&&Array.isArray(p.hand)&&p.hand.length<=10&&p.hand.every(c=>BY_ID[c.cardId]&&typeof c.uid==='string')&&Array.isArray(p.board)&&p.board.length<=5&&p.board.every(u=>BY_ID[u.cardId]&&typeof u.uid==='string'&&Number.isFinite(u.attack)&&Number.isFinite(u.hp)&&Array.isArray(u.keywords))&&(!p.weapon||BY_ID[p.weapon.cardId]&&Number.isFinite(p.weapon.attack)&&Number.isFinite(p.weapon.durability));});
+    }
+    const validAction=a=>a&&['player','cpu'].includes(a.actor)&&['play','attack','weaponAttack','power','choose','end','mulligan'].includes(a.type);
+    for(const entry of data.entries){
+      if(!validState(entry.state)||entry.before&&!validState(entry.before)||entry.action&&!validAction(entry.action)||typeof entry.title!=='string'||!Array.isArray(entry.changes)||entry.changes.some(t=>typeof t!=='string'))throw Error('対戦記録の盤面が不正です');
+      const a=entry.analysis;if(a?.trace&&(!DIFFICULTIES[a.difficulty]||!STYLES[a.style]||!Number.isFinite(a.nodes)||!validAction(a.action)||a.trace.ordering&&!validAction(a.trace.ordering.reserved)||!Array.isArray(a.trace.candidates)||a.trace.candidates.length>128||a.trace.candidates.some(c=>!validAction(c.action)||!Number.isFinite(c.score)||c.followUp&&(!Array.isArray(c.followUp)||c.followUp.some(t=>typeof t!=='string')))))throw Error('対戦記録の思考が不正です');
+    }
+    if(data.entries.at(-1).state.status!=='finished')throw Error('終了した対戦だけを保存できます');
+    const saved=copy(data);return {get:index=>saved.entries[index]?copy(saved.entries[index]):null,get length(){return saved.entries.length;},get finished(){return true;},get metadata(){return copy(saved.metadata||{});},exportData:()=>copy(saved)};
   }
   const orderingName=o=>o?.discovers?(o.draws?'発見・ドロー':'発見'):'ドロー';
   function thought(state,analysis){
@@ -93,5 +109,5 @@
     $('review-auto').addEventListener('click',()=>{if(recording)void play();});$('review-dialog').addEventListener('close',stop);
     return {open(value){if(!value?.finished)return false;stop();recording=value;index=0;phase='after';$('review-phase').value=phase;draw();$('review-dialog').showModal();return true;},close(){stop();if($('review-dialog').open)$('review-dialog').close();}};
   }
-  const api={snapshot,actionName,createRecording,thought,renderThought,createViewer};if(commonJS)module.exports=api;else root.SeikanReview=api;
+  const api={snapshot,actionName,createRecording,restoreRecording,thought,renderThought,createViewer};if(commonJS)module.exports=api;else root.SeikanReview=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
