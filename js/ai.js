@@ -107,7 +107,16 @@
     const owner = state[side]; const enemy = state[other(side)];
     const boardScore = player => player.board.reduce((sum, unit) => {
       const opponent=player===owner?enemy:owner;
-      const death = !unit.silenced ? BY_ID[unit.cardId].effects.filter(e=>e.trigger==='death').reduce((v,e)=>v+(e.type==='draw'?Math.min(e.amount,player.deck.length,10-player.hand.length)*.6*style.weights.hand:e.type==='heal'?Math.min(e.amount,Math.max(1,player.maxHp-player.hp))*.25*style.weights.healing:.4),0) : 0;
+      const allies=player.board.filter(u=>u.uid!==unit.uid);
+      const death = !unit.silenced ? BY_ID[unit.cardId].effects.filter(e=>e.trigger==='death').reduce((v,e)=>{
+        if(e.type==='draw')return v+Math.min(e.amount,player.deck.length,10-player.hand.length)*.6*style.weights.hand;
+        if(e.type==='heal')return v+Math.min(e.amount,Math.max(1,player.maxHp-player.hp))*.25*style.weights.healing;
+        if(e.type==='summon'&&e.into){const c=BY_ID[e.into];return v+Math.min(e.amount,5-allies.length)*(c.attack*style.attack+c.health*style.health)*.4;}
+        if(e.type==='damage'&&e.target==='enemy-units')return v+Math.min(3,opponent.board.reduce((n,u)=>n+(u.shield?.6:Math.min(u.hp,e.amount)*.45),0));
+        if(e.type==='buff'&&e.target==='friendly-units')return v+Math.min(3,allies.length*((e.attack||0)*style.attack+(e.health||0)*style.health)*.35);
+        if(e.type==='shield'&&e.target==='friendly-units')return v+allies.filter(u=>!u.shield).length*.85;
+        return v+.4;
+      },0) : 0;
       const shield=style.advanced&&unit.shield&&opponent.board.some(u=>u.attack>0)?Math.min(1.6,unit.attack*.18):0;
       const poison=style.advanced&&unit.attack>0&&hasKeyword(unit,'poison')?Math.min(2,Math.max(0,...opponent.board.map(u=>u.hp-unit.attack))*.18):0;
       const passive=style.advanced&&unit.attack===0?unit.hp*style.health*(hasKeyword(unit,'taunt') ? .15 : .4):0;
@@ -128,6 +137,7 @@
       let value=Math.min(1.4,intrinsic(card)*.06)-Math.max(0,card.cost-nextMana)*.15;
       if(card.target==='friendly-unit'&&!owner.board.length)value-=.25;
       if(card.target==='enemy-unit'&&!enemy.board.length)value-=.3;
+      if(card.target==='any-unit'&&!enemy.board.length&&!owner.board.length)value-=.3;
       if(card.type==='weapon'&&owner.weapon?.durability>=2&&owner.weapon.attack>=card.attack)value-=.45;
       if(card.effects.some(e=>e.trigger==='play'&&e.type==='draw')&&!owner.deck.length)value-=1;
       return sum+value;
@@ -265,8 +275,10 @@
       if(a.type==='play'){
         const card=BY_ID[owner.hand.find(c=>c.uid===a.card).cardId];
         if(a.target===other(side)+'-hero'&&card.effects.filter(e=>e.type==='damage').reduce((v,e)=>v+e.amount,0)>=enemy.hp)return 10000;
-        const rescue=urgent&&(card.keywords.includes('taunt')||card.effects.some(e=>['heal','damage','destroy','transform'].includes(e.type)))?3:0;
-        return intrinsic(card)+(card.effects.some(e=>e.type==='mana')?6:0)+rescue;
+        const rescue=urgent&&(card.keywords.includes('taunt')||card.effects.some(e=>['heal','damage','destroy','transform','setStats','swapStats'].includes(e.type)))?3:0;
+        let statFit=0;const target=[...owner.board,...enemy.board].find(u=>u.uid===a.target);
+        if(target)for(const e of card.effects){const own=owner.board.includes(target),delta=e.type==='setStats'?(Number.isFinite(e.attack)?e.attack-target.attack:0)*1.3+(Number.isFinite(e.health)?e.health-target.hp:0)*.8:e.type==='swapStats'?(target.hp-target.attack)*.5:0;statFit+=(own?delta:-delta)*.3;}
+        return intrinsic(card)+(card.effects.some(e=>e.type==='mana')?6:0)+rescue+statFit;
       }
       return urgent?4:1;
     }
@@ -336,6 +348,8 @@
       for(const e of c.effects.filter(e=>e.trigger==='play')){
         if(e.type==='damage'&&(e.target==='enemy-hero'||c.target==='enemy-character'))potential+=e.amount;
         if(e.type==='buff'&&e.attack>0)potential+=e.attack*(e.target?.includes('units')?Math.max(1,ready.length):1);
+        if(e.type==='swapStats')potential+=Math.max(0,...ready.map(u=>u.hp-u.attack));
+        if(e.type==='setStats'&&e.attack>0)potential+=Math.max(0,...ready.map(u=>e.attack-u.attack));
       }
     }
     const fatigueThreat=!state[enemy].deck.length&&state[enemy].board.some(u=>!u.silenced&&BY_ID[u.cardId].effects.some(e=>e.trigger==='death'&&e.type==='draw'));
@@ -345,7 +359,7 @@
       if(a.type==='end')return false;
       if(a.type!=='play')return true;
       const c=BY_ID[s[side].hand.find(c=>c.uid===a.card).cardId];
-      return c.keywords.includes('swift')||c.effects.some(e=>e.trigger==='play'&&['damage','buff','destroy','transform','transformRandom','bounce','silence','mana','summon','missiles'].includes(e.type));
+      return c.keywords.includes('swift')||c.effects.some(e=>e.trigger==='play'&&['damage','buff','destroy','transform','transformRandom','bounce','silence','mana','summon','missiles','setStats','swapStats'].includes(e.type));
     }
     function rank(s,a){
       if(['attack','weaponAttack'].includes(a.type)&&a.target==='hero')return 50;

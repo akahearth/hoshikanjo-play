@@ -6,32 +6,32 @@
   <meta name="theme-color" content="#102b2b">
   <meta name="description" content="勝ち星、いただきます。星と精霊の洒落が効いた、オフラインで遊べるターン制カードゲーム。">
   <title>星勘定の決闘 | HOSHIKANJO</title>
-  <link rel="icon" href="assets/favicon.svg?v=2.8.0-36309c178097" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon.svg?v=2.9.0-36309c178097" type="image/svg+xml">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="星勘定">
-  <link rel="manifest" href="manifest.webmanifest?v=2.8.0-871f04ed9ad1">
-  <link rel="stylesheet" href="styles.css?v=2.8.0-1ae7d08b7933">
-  <script defer src="js/cards.js?v=2.8.0-2d9ef147d00a"></script>
-  <script defer src="js/strategy.js?v=2.8.0-b14e27de10a0"></script>
-  <script defer src="js/heroes.js?v=2.8.0-e0ec92a3efbd"></script>
-  <script defer src="js/decks.js?v=2.8.0-e193b59a7436"></script>
-  <script defer src="js/arena.js?v=2.8.0-1d44172dac3b"></script>
-  <script defer src="js/effects.js?v=2.8.0-9407767addfa"></script>
-  <script defer src="js/engine.js?v=2.8.0-5ab255b7799d"></script>
-  <script defer src="js/ai-weights.js?v=2.8.0-7646598501fd"></script>
-  <script defer src="js/ai.js?v=2.8.0-5eeaeb02aa90"></script>
-  <script defer src="js/assist.js?v=2.8.0-d0f22e9d1ad2"></script>
-  <script defer src="js/art.js?v=2.8.0-39dc8f5baf2e"></script>
-  <script defer src="js/traits.js?v=2.8.0-a11a8cc20e8a"></script>
-  <script defer src="js/playback.js?v=2.8.0-e41084e7ac26"></script>
-  <script defer src="js/review.js?v=2.8.0-a24fb29ecf16"></script>
-  <script defer src="js/match-history.js?v=2.8.0-797d7c346537"></script>
-  <script defer src="js/releases.js?v=2.8.0-a42c02d5eb23"></script>
-  <script defer src="js/power-effects.js?v=2.8.0-10b2b14c74b2"></script>
-  <script defer src="js/deck-editor.js?v=2.8.0-b8cb17af545b"></script>
-  <script defer src="js/arena-editor.js?v=2.8.0-b43174a2fcff"></script>
-  <script defer src="js/audio.js?v=2.8.0-ecd4d1af588e"></script>
-  <script defer src="js/app.js?v=2.8.0-3f61bbffee6f"></script>
+  <link rel="manifest" href="manifest.webmanifest?v=2.9.0-871f04ed9ad1">
+  <link rel="stylesheet" href="styles.css?v=2.9.0-1ae7d08b7933">
+  <script defer src="js/cards.js?v=2.9.0-3d7b869d7ba6"></script>
+  <script defer src="js/strategy.js?v=2.9.0-465ac9614046"></script>
+  <script defer src="js/heroes.js?v=2.9.0-e0ec92a3efbd"></script>
+  <script defer src="js/decks.js?v=2.9.0-e193b59a7436"></script>
+  <script defer src="js/arena.js?v=2.9.0-1d44172dac3b"></script>
+  <script defer src="js/effects.js?v=2.9.0-906da80c79d0"></script>
+  <script defer src="js/engine.js?v=2.9.0-213a598358c3"></script>
+  <script defer src="js/ai-weights.js?v=2.9.0-7646598501fd"></script>
+  <script defer src="js/ai.js?v=2.9.0-5434f4db2523"></script>
+  <script defer src="js/assist.js?v=2.9.0-d0f22e9d1ad2"></script>
+  <script defer src="js/art.js?v=2.9.0-39dc8f5baf2e"></script>
+  <script defer src="js/traits.js?v=2.9.0-a11a8cc20e8a"></script>
+  <script defer src="js/playback.js?v=2.9.0-1ba5a192d6b6"></script>
+  <script defer src="js/review.js?v=2.9.0-a24fb29ecf16"></script>
+  <script defer src="js/match-history.js?v=2.9.0-797d7c346537"></script>
+  <script defer src="js/releases.js?v=2.9.0-6fae4fded6a8"></script>
+  <script defer src="js/power-effects.js?v=2.9.0-10b2b14c74b2"></script>
+  <script defer src="js/deck-editor.js?v=2.9.0-0de1160fff9d"></script>
+  <script defer src="js/arena-editor.js?v=2.9.0-b43174a2fcff"></script>
+  <script defer src="js/audio.js?v=2.9.0-252e6f1141db"></script>
+  <script defer src="js/app.js?v=2.9.0-635147b7d4a4"></script>
 </head>
 <body>
   <main id="start-screen" class="start-screen" aria-labelledby="start-title">
@@ -44,7 +44,7 @@
       <button id="start-watch" class="start-card"><span class="start-icon" aria-hidden="true">◉</span><span><strong>CPU同士を観戦</strong><small>構築戦・アリーナを選んで手合わせ見物</small><em>両手札とCPUの判断を確認</em></span><b aria-hidden="true">→</b></button>
     </div>
     <div class="start-tools" role="group" aria-label="準備と設定"><button id="start-deck" class="editor-button">デッキ編集</button><button id="start-collection" class="editor-button">カード一覧</button><button id="start-settings" class="editor-button">CPU設定</button><button id="start-audio" class="editor-button">♫ 音設定</button><button id="start-help" class="editor-button">遊び方</button><button id="start-history" class="editor-button">対戦履歴（10件）</button><button id="start-updates" class="editor-button">更新履歴</button></div>
-    <p class="start-footnote">デッキと設定は、この端末のブラウザ内に保存されます。<span>v2.8.0</span></p>
+    <p class="start-footnote">デッキと設定は、この端末のブラウザ内に保存されます。<span>v2.9.0</span></p>
   </main>
   <div id="game-shell" class="app-shell" hidden>
     <header class="masthead">
@@ -97,7 +97,7 @@
         <div class="sidebar-bottom"><span class="offline-dot"></span> OFFLINE READY <span>PHASE 04</span></div>
       </aside>
     </main>
-    <footer class="page-footer"><span>HOSHIKANJO <span>星勘定の決闘</span></span><span>80の洒落もの。あなたの22枚。</span><button id="restart-button" class="text-button">新しい対戦 ↻</button></footer>
+    <footer class="page-footer"><span>HOSHIKANJO <span>星勘定の決闘</span></span><span>92の洒落もの。あなたの22枚。</span><button id="restart-button" class="text-button">新しい対戦 ↻</button></footer>
   </div>
   <div id="touch-toolbar" class="touch-toolbar" aria-label="タップ操作" hidden><button id="mobile-info" aria-expanded="false">情報・一時停止</button><button id="inspect-toggle" aria-pressed="false">詳細を見る</button><button id="touch-assist" disabled>✧ アシスト</button><button id="touch-end-turn">ターン終了 →</button></div>
   <div id="power-effect-layer" class="power-effect-layer" hidden aria-hidden="true"></div>
@@ -141,19 +141,19 @@
       <dt>対戦の振り返り</dt><dd>対戦後の「この対戦を振り返る」から、両者の手札・盤面、行動前後の変化、CPUの比較候補・評価・探索数を確認できます。前後の手への移動、位置指定、速度変更と自動再生に対応。記録は現在の対戦のみで、新しい対戦やページ更新で消えます。</dd>
       <dt>CPU同士の観戦</dt><dd>「CPU同士を観戦」から双方のデッキ・難易度・戦術を選びます。下がCPU A、上がCPU Bです。初手交換と発見も自動。進行速度と一時停止を使い、双方の手札や判断を確認できます。「自分で対戦する」で通常対戦へ戻ります。</dd>
       <dt>ヒーローパワー</dt><dd>2マナで自分のターンに1回。ボタンを押して光る対象を選択します。回復・1ダメージ・星護の3種類から、デッキ編集で選べます。</dd>
-      <dt>デッキ編集</dt><dd>全80種類。通常は同名2枚、逸品は同名1枚まで。22枚で完成、最大12デッキを保存。「保存して対戦開始」で選んだデッキを使用します。CPUは3つの構築済みデッキから選びます。</dd>
+      <dt>デッキ編集</dt><dd>全92種類。通常は同名2枚、逸品は同名1枚まで。22枚で完成、最大12デッキを保存。「保存して対戦開始」で選んだデッキを使用します。CPUは3つの構築済みデッキから選びます。</dd>
     </dl>
     <div class="rule-note"><strong>⚔ 攻撃力　♥ HP　◇ マナ</strong><p>ユニット同士は同時ダメージ。HPが0以下で退場します。回復の上限はヒーロー25、ユニットは現在の最大HP。HPを下げる弱体化は星護では防げません。</p><p>手札は10枚までで超過ドローは破棄。山札切れ後のドローは1、2、3…と増えるダメージになります。</p><p>「選択解除」、同じカードの再クリック、Escでキャンセル。カードを右クリックすると詳細を確認できます。</p><p>進行速度は「ゆっくり」が初期設定。「いまの行動」でカード・対象・HP変化を確認できます。「CPUを一時停止」で演出と次の行動を止めて読めます。演出中の連続操作はできませんが、新しい対戦はいつでも開始できます。</p></div>
     <button class="primary-button close-modal">閉じる</button>
   </dialog>
-  <dialog id="collection-dialog" class="modal collection-modal"><div class="modal-heading"><span class="eyebrow" id="collection-count">THE COLLECTION · 80 CARDS</span><button class="close-modal" aria-label="閉じる">×</button></div><h2>星いもの図鑑。</h2><p class="dialog-intro">ユニット44種類・呪文31種類・武器5種類。通常は同名2枚、逸品は同名1枚まで。「デッキ編集」で、あなたの22枚を組みましょう。</p><div id="collection-grid" class="collection-grid"></div></dialog>
+  <dialog id="collection-dialog" class="modal collection-modal"><div class="modal-heading"><span class="eyebrow" id="collection-count">THE COLLECTION · 92 CARDS</span><button class="close-modal" aria-label="閉じる">×</button></div><h2>星いもの図鑑。</h2><p class="dialog-intro">ユニット48種類・呪文39種類・武器5種類。通常は同名2枚、逸品は同名1枚まで。「デッキ編集」で、あなたの22枚を組みましょう。</p><div id="collection-grid" class="collection-grid"></div></dialog>
   <dialog id="deck-dialog" class="modal deck-modal" aria-labelledby="deck-editor-title">
     <div class="modal-heading"><span class="eyebrow">DECK WORKSHOP · PHASE 03</span><button class="close-modal" aria-label="デッキ編集を閉じる">×</button></div>
-    <div class="deck-title-row"><div><h2 id="deck-editor-title">手札の仕込み、手抜きなし。</h2><p class="dialog-intro">全80種類から22枚。通常は同名2枚、逸品は同名1枚まで。ヒーローパワーも一緒に選ぼう。</p></div><span class="workshop-seal" aria-hidden="true">✧</span></div>
+    <div class="deck-title-row"><div><h2 id="deck-editor-title">手札の仕込み、手抜きなし。</h2><p class="dialog-intro">全92種類から22枚。通常は同名2枚、逸品は同名1枚まで。ヒーローパワーも一緒に選ぼう。</p></div><span class="workshop-seal" aria-hidden="true">✧</span></div>
     <div class="deck-toolbar"><label>デッキ <select id="deck-select"></select></label><button id="deck-new" class="editor-button">＋ 新規</button><button id="deck-duplicate" class="editor-button">複製</button><button id="deck-import" class="editor-button">ファイル読込</button><input id="deck-file" type="file" accept=".json,application/json" hidden></div>
     <p id="deck-notice" class="deck-notice" role="status" aria-live="polite"></p>
     <div class="deck-workspace"><section class="deck-library" aria-label="採用できるカード">
-      <div class="deck-filters"><label class="search-label">カード検索<input id="deck-search" type="search" placeholder="名前・能力・分類から検索"></label><label>マナ<select id="deck-cost"><option value="">すべて</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></label><label>種類<select id="deck-type"><option value="">すべて</option><option value="unit">ユニット</option><option value="spell">呪文</option><option value="weapon">武器</option></select></label><label>能力<select id="deck-trait"><option value="">すべて</option><option value="aegis">星護</option><option value="taunt">挑発</option><option value="swift">速攻</option><option value="poison">毒</option><option value="death">死亡時</option><option value="discover">発見</option><option value="transform">変身</option><option value="mutate">山札変異</option><option value="unique">逸品（1枚制限）</option></select></label></div>
+      <div class="deck-filters"><label class="search-label">カード検索<input id="deck-search" type="search" placeholder="名前・能力・分類から検索"></label><label>マナ<select id="deck-cost"><option value="">すべて</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></label><label>種類<select id="deck-type"><option value="">すべて</option><option value="unit">ユニット</option><option value="spell">呪文</option><option value="weapon">武器</option></select></label><label>能力<select id="deck-trait"><option value="">すべて</option><option value="new">新カード（v2.9）</option><option value="aegis">星護</option><option value="taunt">挑発</option><option value="swift">速攻</option><option value="poison">毒</option><option value="death">死亡時</option><option value="stats">ステータス変化</option><option value="aoe">全体効果（AOE）</option><option value="discover">発見</option><option value="transform">変身</option><option value="mutate">山札変異</option><option value="unique">逸品（1枚制限）</option></select></label></div>
       <div class="library-heading"><span>YOUR COLLECTION · 各2枚まで使用可能</span><span id="deck-filter-count"></span></div><div id="deck-cards" class="editor-card-grid"></div>
     </section><section class="deck-summary" aria-label="編集中のデッキ">
       <label for="deck-name">デッキ名 <span>40文字まで</span></label><input id="deck-name" maxlength="40" autocomplete="off">

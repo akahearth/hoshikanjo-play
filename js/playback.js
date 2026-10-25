@@ -87,6 +87,7 @@
       for (const effect of card.effects.filter(item => item.trigger === 'play')) {
         if (effect.target === 'friendly-hero') highlights.add(`${action.actor}-hero`);
         if (effect.target === 'enemy-units') before[action.actor === 'player' ? 'cpu' : 'player'].board.forEach(unit => highlights.add(unit.uid));
+        if (effect.target === 'all-units') for(const side of ['player','cpu'])before[side].board.forEach(unit=>highlights.add(unit.uid));
         if (['friendly-units', 'other-friendly-units'].includes(effect.target)) owner.board.forEach(unit => highlights.add(unit.uid));
       }
       return { kind: card.type === 'weapon' ? 'equip' : card.type === 'spell' ? 'spell' : 'summon', actor: action.actor, title: `${sideName(action.actor)}が「${card.name}」を${card.type === 'weapon' ? '装備' : card.type === 'spell' ? '使用' : '召喚'}`, description: card.description, target: entityName(before, action.target), cardId: card.id, highlights: [...highlights], changes };

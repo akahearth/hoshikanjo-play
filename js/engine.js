@@ -105,6 +105,7 @@
       case 'enemy-character': return [`${other(actor)}-hero`, ...enemy];
       case 'friendly-unit': return friendly;
       case 'enemy-unit': return enemy;
+      case 'any-unit': return [...friendly,...enemy];
       default: return [];
     }
   }

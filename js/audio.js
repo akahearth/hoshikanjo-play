@@ -23,7 +23,7 @@
   function cuesFor(description,effects=[]){
     let cue=description.kind;
     if(cue==='power')cue=description.powerEffect?.kind==='heal'?'heal':description.powerEffect?.kind==='shield'?'shield':'power';
-    if(effects.some(e=>['transform','mutate'].includes(e.type)))cue='transform';
+    if(effects.some(e=>['transform','mutate','setStats','swapStats'].includes(e.type)))cue='transform';
     const cues=CUES[cue]?[cue]:[];
     if(effects.some(e=>e.type==='damage'&&e.blocked)&&cue!=='shield')cues.push('shield');
     return cues;

@@ -262,7 +262,7 @@
       element?.classList.add('effect-flash');
       if (effect.type === 'heal' && effect.amount) pop(element, `+${effect.amount}`, true);
       if (effect.type === 'damage') pop(element, effect.blocked ? '星護' : `−${effect.amount}`);
-      if (effect.type === 'buff') pop(element, '変化', true);
+      if (['buff','setStats','swapStats'].includes(effect.type)) pop(element, effect.type==='setStats'?'数値変更':effect.type==='swapStats'?'攻守交換':'変化', true);
       if (effect.type === 'shield') pop(element, effect.granted ? '星護＋' : '星護あり', true);
       if (effect.type === 'transform') {element?.classList.add('transformed');pop(element,'変身',true);}
     }

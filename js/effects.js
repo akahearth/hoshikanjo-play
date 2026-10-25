@@ -36,12 +36,24 @@
       case 'large-enemies': return state[other(source.side)].board.filter(u=>u.attack>=5).map(u=>u.uid);
       case 'strongest-enemy': { const units=state[other(source.side)].board.filter(u=>u.hp>0),top=Math.max(0,...units.map(u=>u.attack));const unit=randomOne(state,units.filter(u=>u.attack===top));return unit?[unit.uid]:[]; }
       case 'enemy-units': return state[other(source.side)].board.map(unit => unit.uid);
+      case 'all-units': return [...state[source.side].board,...state[other(source.side)].board].map(unit=>unit.uid);
       case 'friendly-units': return state[source.side].board.map(unit => unit.uid);
       case 'other-friendly-units': return state[source.side].board.filter(unit => unit.uid !== source.uid).map(unit => unit.uid);
       default: return [];
     }
   }
   const handlers = {
+    setStats(state,target,effect,context){
+      if(target.hero||target.model.hp<=0)return;const unit=target.model;
+      if(Number.isFinite(effect.attack))unit.attack=Math.max(0,effect.attack);
+      if(Number.isFinite(effect.health))unit.hp=unit.maxHp=Math.max(0,effect.health);
+      context.events.push({type:'setStats',target:target.id});context.log(`「${BY_ID[unit.cardId].name}」の数値を変更（攻撃力${unit.attack} / HP${unit.hp}、最大${unit.maxHp}）。能力と攻撃権は保持。`);
+    },
+    swapStats(state,target,effect,context){
+      if(target.hero||target.model.hp<=0)return;const unit=target.model,attack=unit.attack;
+      unit.attack=unit.hp;unit.hp=unit.maxHp=attack;
+      context.events.push({type:'swapStats',target:target.id});context.log(`「${BY_ID[unit.cardId].name}」の攻撃力と現在HPを交換（${unit.attack} / ${unit.hp}）。能力と攻撃権は保持。`);
+    },
     destroy(state,target,effect,context) {
       if(target.hero||target.model.hp<=0)return;target.model.hp=0;
       context.events.push({type:'destroy',target:target.id});context.log(`「${BY_ID[target.model.cardId].name}」を破壊。`);
@@ -81,8 +93,9 @@
       context.log(`「${BY_ID[target.model.cardId].name}」${granted ? 'に星護を付与。' : 'はすでに星護で守られている。'}`);
     },
     damage(state, target, effect, context) {
+      const hpBefore=target.model.hp;
       const hit = damage(state, target.id, effect.amount);
-      context.events.push({ type: 'damage', target: target.id, ...hit });
+      context.events.push({ type: 'damage', target: target.id, ...hit, effectiveDamage:Math.max(0,Math.min(hpBefore,hit.amount)) });
       context.log(hit.blocked ? '星護がダメージを防ぎ、砕けた。' : `${target.hero ? 'ヒーロー' : BY_ID[target.model.cardId].name}に${hit.amount}ダメージ。`);
     },
     heal(state, target, effect, context) {
@@ -126,6 +139,8 @@
       if (++count > 200) throw new Error('効果の連鎖が安全上限を超えました。');
       const task = queue.shift();
       const effect = task.effect;
+      const eventStart=events.length;
+      if(effect.trigger==='death')events.push({type:'deathEffect',source:{...task.source},trigger:'death'});
       const definition = BY_ID[task.source.cardId] || task.source;
       const trigger = effect.trigger === 'death' ? '死亡時' : definition.type === 'unit' ? '召喚時' : definition.type === 'power' ? 'ヒーローパワー' : '呪文';
       context.log(`「${definition.name}」の${trigger}効果。`);
@@ -174,6 +189,7 @@
           if (entity) handler(state, entity, effect, context);
         }
       }
+      for(let i=eventStart;i<events.length;i++){events[i].source={...task.source};events[i].trigger=effect.trigger;}
       hooks.checkWinner();
       collectDeaths();
     }
