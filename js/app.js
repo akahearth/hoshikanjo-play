@@ -176,7 +176,7 @@
     const power = BY_POWER[state.player.heroPower]; const powerReason = canUsePower(state, 'player');
     $('power-name').textContent = power.name;
     $('power-description').textContent = power.description;
-    $('power-status').textContent = pendingPower ? '光る対象を選択 · もう一度押すと解除' : state.player.powerUsed ? 'このターンは使用済み' : busy ? '行動の確認中' : powerReason || '毎ターン1回 · クリックで対象選択';
+    $('power-status').textContent = pendingPower ? '光る対象を選択 · もう一度押すと解除' : state.player.powerUsed ? 'このターンは使用済み' : busy ? '行動の確認中' : powerReason || (power.target?'毎ターン1回 · クリックで対象選択':'毎ターン1回 · クリックで使用');
     $('hero-power').disabled = !playerTurn() || Boolean(powerReason);
     $('hero-power').classList.toggle('power-ready', playerTurn() && !powerReason);
     $('hero-power').classList.toggle('power-selected', pendingPower);
@@ -428,7 +428,7 @@
   function renderMulligan() {
     $('mulligan-difficulty').value=matchCpu.difficulty;
     const first = state.first === 'player';
-    $('mulligan-order').textContent = `${state.mode==='arena'?'アリーナ：':''}あなたは${first ? '先攻' : '後攻'} · 初手${state.player.hand.length}枚。HP25で開始します。${first ? 'CPUが後攻支援を得ます。' : '初手確定後に「後攻の先借り」を1枚獲得します。'}`;
+    $('mulligan-order').textContent = `${state.mode==='arena'?'アリーナ：':''}あなたは${first ? '先攻' : '後攻'} · 初手${state.player.hand.length}枚。HP${state.player.maxHp}で開始します。${first ? 'CPUが後攻支援を得ます。' : '初手確定後に「後攻の先借り」を1枚獲得します。'}`;
     $('mulligan-cards').innerHTML = state.player.hand.map(item => cardMarkup(BY_ID[item.cardId],item.uid,'opening').replace('<button ',`<button data-mulligan="${item.uid}" aria-pressed="${openingSelection.has(item.uid)}" `).replace('class="card ',`class="card ${openingSelection.has(item.uid)?'exchange-card ':''}`)).join('');
     $('mulligan-count').textContent = openingSelection.size ? `${openingSelection.size}枚を交換 · 選択中のカードに「交換」と表示` : 'すべてキープ · 交換したいカードは選択してください';
     $('mulligan-confirm').textContent = openingSelection.size ? `${openingSelection.size}枚を交換して対戦開始 →` : 'すべてキープして対戦開始 →';
@@ -542,6 +542,7 @@
     if (pendingPower) { cancelSelection(); return; }
     if(assistView.proposal?.action.type!=='power')clearAssist();
     const reason = canUsePower(state, 'player'); if (!playerTurn() || reason) return;
+    if(!BY_POWER[state.player.heroPower].target){void dispatch({type:'power',actor:'player'});return;}
     selected = null; pendingCard = null; pendingPower = true; render();
     message(`「${BY_POWER[state.player.heroPower].name}」：光る対象を選んでください。選ぶまでマナは消費されません。`);
   });

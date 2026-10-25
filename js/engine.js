@@ -7,7 +7,7 @@
   const { cardListErrors } = commonJS ? require('./decks.js') : root.SeikanDecks;
   const { hasKeyword, damage, resolveEffects } = commonJS ? require('./effects.js') : root.SeikanEffects;
   const { chooseMulligan } = commonJS ? require('./strategy.js') : root.SeikanStrategy;
-  const RULES = Object.freeze({ heroHealth: 25, boardLimit: 5, handLimit: 10, manaLimit: 10, initialHand: 3, arenaInitialHand: 3 });
+  const RULES = Object.freeze({ heroHealth: 30, boardLimit: 5, handLimit: 10, manaLimit: 10, initialHand: 3, arenaInitialHand: 3 });
   const other = side => side === 'player' ? 'cpu' : 'player';
   const label = side => side === 'player' ? 'あなた' : '星よみ経理';
   const clone = state => JSON.parse(JSON.stringify(state));
@@ -120,7 +120,8 @@
     if (!power) return 'ヒーローパワーが不正です。';
     if (owner.powerUsed) return 'このターンのヒーローパワーは使用済みです。';
     if (owner.mana < power.cost) return `ヒーローパワーには${power.cost}マナ必要です。`;
-    if (!powerTargets(state, actor).length) return 'ヒーローパワーの対象になるユニットがいません。';
+    if (power.effects.some(e=>e.type==='summon') && owner.board.length>=RULES.boardLimit) return '場が5体のため召喚できません。';
+    if (power.target && !powerTargets(state, actor).length) return 'ヒーローパワーの対象になるユニットがいません。';
     return null;
   }
   function attackTargets(state, actor) {
@@ -169,7 +170,8 @@
     if (action.type === 'power') {
       const reason = canUsePower(state, action.actor);
       if (reason) return reason;
-      if (!powerTargets(state, action.actor).includes(action.target)) return 'ヒーローパワーの有効な対象を選んでください。';
+      if (!BY_POWER[owner.heroPower].target && action.target!==undefined) return 'このパワーに対象の指定は不要です。';
+      if (BY_POWER[owner.heroPower].target && !powerTargets(state, action.actor).includes(action.target)) return 'ヒーローパワーの有効な対象を選んでください。';
       return null;
     }
     if (action.type === 'play') {
@@ -288,7 +290,10 @@
     if (state.status !== 'playing' || actor !== state.active) return [];
     if(state.choice)return state.choice.side===actor?state.choice.options.map(c=>({type:'choose',actor,choice:c.uid})):[];
     const actions = [{ type: 'end', actor }];
-    if (!canUsePower(state, actor)) for (const target of powerTargets(state, actor)) actions.push({ type: 'power', actor, target });
+    if (!canUsePower(state, actor)) {
+      if(BY_POWER[state[actor].heroPower].target)for (const target of powerTargets(state, actor)) actions.push({ type: 'power', actor, target });
+      else actions.push({type:'power',actor});
+    }
     for (const instance of state[actor].hand) {
       if (canPlayCard(state, actor, instance.uid)) continue;
       const card = BY_ID[instance.cardId];

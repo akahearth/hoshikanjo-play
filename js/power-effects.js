@@ -1,6 +1,9 @@
 (function (root) {
   'use strict';
   const SIGNS = Object.freeze({
+    draw:{label:'手札補充',svg:'<path d="M8 10h18v25H8Zm7-6h18v25" fill="none" stroke="currentColor" stroke-width="3"/>'},
+    summon:{label:'召喚',svg:'<path d="M20 36V18C6 20 3 9 5 5c12 0 16 7 15 13C20 6 28 3 36 5c2 12-5 17-16 16" fill="none" stroke="currentColor" stroke-width="3"/>'},
+    buff:{label:'強化',svg:'<path d="m7 24 13-15 13 15h-9v12h-8V24Z"/>'},
     heal: { label:'回復', svg:'<path d="M16 4h8v12h12v8H24v12h-8V24H4v-8h12Z"/>' },
     damage: { label:'ダメージ', svg:'<path d="m23 2-18 22h13l-2 14 19-24H22Z"/>' },
     shield: { label:'星護', svg:'<path d="m20 3 14 6-2 16-12 12L8 25 6 9Z" fill="none" stroke="currentColor" stroke-width="3"/><path d="m20 10 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/>' }

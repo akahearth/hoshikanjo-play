@@ -18,7 +18,7 @@
       $('draft-status').textContent=announcement;
       $('draft-offers').innerHTML=(previewOffers || visible.offers).map(choice=>{
         const hero=BY_HERO[choice.id];
-        const content=heroes?`<span class="hero-pick-art">${root.SeikanArt.illustration(BY_POWER[hero.power],choice.uid)}</span><strong>${hero.name}</strong><p>${hero.description}</p><small>HP25 · ${BY_POWER[hero.power].name} / 2マナ</small>`:cardMarkup(BY_ID[choice.id],choice.uid,'draft');
+        const content=heroes?`<span class="hero-pick-art">${root.SeikanArt.illustration(BY_POWER[hero.power],choice.uid)}</span><strong>${hero.name}</strong><p>${hero.description}</p><small>HP30 · ${BY_POWER[hero.power].name} / 2マナ</small>`:cardMarkup(BY_ID[choice.id],choice.uid,'draft');
         // カードは既存のbuttonを使い、ヒーローだけ独自buttonにする（入れ子禁止）。
         return heroes?`<button class="hero-pick" data-draft-pick="${choice.uid}" ${busy||draft.active!=='player'?'disabled':''}>${content}</button>`:content.replace('<button ',`<button data-draft-pick="${choice.uid}" ${busy||draft.active!=='player'?'disabled':''} `);
       }).join('');

@@ -79,9 +79,9 @@
   // 本人の候補と獲得カードだけを使う。相手のピック・将来の候補・山札は参照しない。
   function chooseCpu(state, style = 'balanced') {
     if (state.active !== 'cpu' || state.phase === 'complete') return null;
-    const heroOrder = style === 'aggressive' ? ['ember-call','green-rest','astral-ward'] : style === 'defensive' ? ['astral-ward','green-rest','ember-call'] : ['green-rest','ember-call','astral-ward'];
+    const heroOrder = style === 'aggressive' ? ['ember-call','verdant-cheer','sprout-call','ledger-tap','astral-ward','green-rest'] : style === 'defensive' ? ['astral-ward','green-rest','sprout-call','verdant-cheer','ledger-tap','ember-call'] : ['sprout-call','ember-call','verdant-cheer','astral-ward','ledger-tap','green-rest'];
     function score(choice) {
-      if (state.phase === 'heroes') return 3-heroOrder.indexOf(BY_HERO[choice.id].power);
+      if (state.phase === 'heroes') return heroOrder.length-heroOrder.indexOf(BY_HERO[choice.id].power);
       const card=BY_ID[choice.id];
       const styleBonus=style==='aggressive'&&card.keywords.includes('swift')?1:style==='defensive'&&card.keywords.includes('taunt')?1:0;
       return draftScore(card,state.cpu.cards)+styleBonus;

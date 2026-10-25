@@ -2438,3 +2438,7 @@ button { touch-action:manipulation; }
  #assist-dismiss { min-width:30px; min-height:40px; }
  .assist-source::after,.assist-target::after { font-size:8px; padding:2px 3px; }
 }
+
+.power-effect-layer[data-kind="draw"] { --power-color:#d3b6ff; }
+.power-effect-layer[data-kind="summon"] { --power-color:#b9e994; }
+.power-effect-layer[data-kind="buff"] { --power-color:#f0d48c; }

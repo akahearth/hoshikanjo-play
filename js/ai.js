@@ -132,7 +132,7 @@
     const danger=publicDamage(enemy,owner,state.active===other(side));
     const lethalRisk=(danger>=owner.hp?65:Math.max(0,danger-owner.hp+5)*1.7)*style.weights.danger;
     const handQuality=owner.hand.reduce((sum,c)=>{
-      if(c.unknown||c.uid.startsWith('fog-'))return sum+(c.discovered ? .45 : 0);
+      if(c.unknown||c.uid.startsWith('fog-'))return sum+.45;
       const card=BY_ID[c.cardId],nextMana=Math.min(10,owner.maxMana+1);
       let value=Math.min(1.4,intrinsic(card)*.06)-Math.max(0,card.cost-nextMana)*.15;
       if(card.target==='friendly-unit'&&!owner.board.length)value-=.25;
@@ -343,7 +343,7 @@
   function* tacticalSearch(state,side,settings,config,budget,stats,scoring,known){
     const enemy=other(side),owner=state[side];
     const ready=owner.board.filter(u=>u.ready&&u.attack>0),weapon=owner.weapon&&!owner.heroAttacked?owner.weapon.attack:0;
-    let potential=ready.reduce((n,u)=>n+u.attack,0)+weapon+(owner.heroPower==='ember-call'&&!owner.powerUsed?1:0);
+    let potential=ready.reduce((n,u)=>n+u.attack,0)+weapon+(!owner.powerUsed&&owner.mana>=2?(owner.heroPower==='ember-call'||owner.heroPower==='verdant-cheer'&&ready.length?1:0):0);
     for(const item of owner.hand){const c=BY_ID[item.cardId];if(c.keywords.includes('swift'))potential+=c.attack;
       for(const e of c.effects.filter(e=>e.trigger==='play')){
         if(e.type==='damage'&&(e.target==='enemy-hero'||c.target==='enemy-character'))potential+=e.amount;

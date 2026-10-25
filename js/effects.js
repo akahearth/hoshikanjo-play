@@ -100,7 +100,7 @@
     },
     heal(state, target, effect, context) {
       if (target.model.hp <= 0) return;
-      const cap = target.hero ? (target.model.maxHp || 25) : target.model.maxHp;
+      const cap = target.hero ? (target.model.maxHp || 30) : target.model.maxHp;
       const amount = Math.max(0, Math.min(effect.amount, cap - target.model.hp));
       target.model.hp += amount;
       context.events.push({ type: 'heal', target: target.id, amount });

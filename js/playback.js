@@ -72,14 +72,16 @@
     }
     if (action.type === 'power') {
       const power = BY_POWER[owner.heroPower];
-      const effect = result.effects.find(item=>item.target===action.target);
-      const kind = effect?.type || power.effects[0].type;
+      const target=action.target||`${action.actor}-hero`;
+      const effect = result.effects.find(item=>item.target===target);
+      const kind = power.id==='ledger-tap'?'draw':power.effects[0].type==='summon'?'summon':effect?.type || power.effects[0].type;
       const outcome = kind === 'heal' ? (effect?.amount ? `HP +${effect.amount}` : '回復なし（HP上限）')
         : kind === 'damage' ? (effect?.blocked ? '星護が防御' : `−${effect?.amount || 0} ダメージ`)
-        : effect?.granted ? '星護を付与' : '星護あり';
-      const powerEffect = { kind, source:`${action.actor}-hero`, sourceName:sideName(action.actor), target:action.target, targetName:entityName(before,action.target), outcome };
+        : kind==='draw' ? (result.state.status==='finished'?'HP支払い・山札切れで決着':owner.deck.length===0?'HP −2・山札切れ':owner.hand.length>=10?'HP −2・手札上限で消失':'HP −2・1枚ドロー')
+        : kind==='summon'?'1/1を召喚':kind==='buff'?'攻撃力 +1 / HP +1':effect?.granted ? '星護を付与' : '星護あり';
+      const powerEffect = { kind, source:`${action.actor}-hero`, sourceName:sideName(action.actor), target, targetName:entityName(before,target), outcome };
       changes.unshift(`${powerEffect.targetName}：${outcome}`);
-      return { kind: 'power', actor: action.actor, title: `${sideName(action.actor)}が「${power.name}」を使用`, description: power.description, target: entityName(before, action.target), cardId: null, powerId: power.id, highlights: [`${action.actor}-hero`, action.target], powerEffect, changes };
+      return { kind: 'power', actor: action.actor, title: `${sideName(action.actor)}が「${power.name}」を使用`, description: power.description, target: entityName(before, target), cardId: null, powerId: power.id, highlights: [...new Set([`${action.actor}-hero`, target])], powerEffect, changes };
     }
     if (action.type === 'play') {
       const card = BY_ID[owner.hand.find(item => item.uid === action.card).cardId];
