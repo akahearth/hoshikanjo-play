@@ -167,6 +167,18 @@
           const unit=context.makeUnit({uid:`unit-${state.nextId++}`,cardId:card.id});state[task.source.side].board.push(unit);
           events.push({type:'summon',target:unit.uid,cardId:card.id});context.log(`「${card.name}」を効果で召喚（召喚時効果なし）。`);
         }
+      } else if(effect.type==='replenish') {
+        const owner=state[task.source.side], chosenUnit=effect.mode==='copy'?findEntity(state,task.chosen):null;
+        const pool=effect.mode==='random'?cardPool(effect):[];
+        const id=effect.mode==='fixed'?effect.into:effect.mode==='self'?task.source.cardId:chosenUnit&&!chosenUnit.hero&&chosenUnit.side===task.source.side?chosenUnit.model.cardId:null;
+        let added=0;
+        for(let i=0;i<effect.amount;i++){
+          const cardId=effect.mode==='random'?(state.simulation?'moss-spirit':randomOne(state,pool)?.id):id;
+          if(!cardId||!Object.hasOwn(BY_ID,cardId))continue;
+          owner.deck.splice(Math.floor(roll(state)*(owner.deck.length+1)),0,cardId);added++;
+        }
+        events.push({type:'replenish',side:task.source.side,amount:added});
+        context.log('山札に'+added+'枚を混ぜた。内容と順番は非公開。');
       } else if(effect.type==='mutate') {
         state[task.source.side].deck=state[task.source.side].deck.map(id=>{
           const old=BY_ID[id];if(effect.from&&old.type!==effect.from)return id;

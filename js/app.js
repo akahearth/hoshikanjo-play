@@ -201,7 +201,7 @@
     $('mana-text').innerHTML = `${state.player.mana} <small>/ ${state.player.maxMana}${state.player.temporaryMana ? ` ＋一時${state.player.temporaryMana}` : ''}</small>`;
     $('mana-crystals').innerHTML = Array.from({ length: 10 }, (_, index) => `<i class="gem ${index < state.player.mana ? 'filled' : index < state.player.maxMana ? 'spent' : ''}" aria-hidden="true"></i>`).join('');
     $('mana-crystals').setAttribute('aria-label', `マナ${state.player.mana}、上限${state.player.maxMana}`);
-    $('player-deck').innerHTML = `山札<br><strong>${state.player.deck.length}</strong> / ${SeikanDecks.DECK_SIZE}`;
+    $('player-deck').innerHTML = `山札<br><strong>${state.player.deck.length}</strong> 枚`;
     $('hand-count').textContent = `${state.player.hand.length} / 10`;
     $('hand').innerHTML = state.player.hand.length ? state.player.hand.map(item => cardMarkup(BY_ID[item.cardId], item.uid,spectator?'watch':'hand')).join('') : '<p class="hand-empty">手札がありません。次の星の巡りを待とう。</p>';
     $('hand').scrollLeft = handScroll;

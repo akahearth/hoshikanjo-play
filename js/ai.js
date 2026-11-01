@@ -109,6 +109,7 @@
       const opponent=player===owner?enemy:owner;
       const allies=player.board.filter(u=>u.uid!==unit.uid);
       const death = !unit.silenced ? BY_ID[unit.cardId].effects.filter(e=>e.trigger==='death').reduce((v,e)=>{
+        if(e.type==='replenish')return v+e.amount*.3;
         if(e.type==='draw')return v+Math.min(e.amount,player.deck.length,10-player.hand.length)*.6*style.weights.hand;
         if(e.type==='heal')return v+Math.min(e.amount,Math.max(1,player.maxHp-player.hp))*.25*style.weights.healing;
         if(e.type==='summon'&&e.into){const c=BY_ID[e.into];return v+Math.min(e.amount,5-allies.length)*(c.attack*style.attack+c.health*style.health)*.4;}
@@ -177,8 +178,9 @@
     }
     if(result.ok&&action.type==='play'){
       const card=BY_ID[state[action.actor].hand.find(c=>c.uid===action.card).cardId];
-      if(card.effects.some(e=>['missiles','transformRandom'].includes(e.type)||(e.type==='summon'&&!e.into)||e.target==='strongest-enemy'))result.state.uncertain=true;
+      if(card.effects.some(e=>['missiles','transformRandom','replenish'].includes(e.type)||(e.type==='summon'&&!e.into)||e.target==='strongest-enemy'))result.state.uncertain=true;
       // 山札の実物を参照せず、残り枚数だけから変異の将来価値を控えめに見積もる。
+      for(const e of card.effects.filter(e=>e.type==='replenish'))result.state[action.actor].planningValue=(result.state[action.actor].planningValue||0)+e.amount*(state[action.actor].deck.length<5?.8:.18);
       for(const e of card.effects.filter(e=>e.type==='mutate'))result.state[action.actor].planningValue=(result.state[action.actor].planningValue||0)+Math.min(4,state[action.actor].deck.length*.3)*(e.delta===0?.65:e.from==='unit'?.5:1);
     }
     // まだ起きていない発見の候補は未知。平均的な手札1枚として評価し、

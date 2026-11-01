@@ -58,6 +58,7 @@
   function describeAction(before, action, result) {
     const owner = before[action.actor];
     const changes = changesBetween(before, result.state);
+    for(const side of ['player','cpu'])if(result.effects?.some(e=>e.type==='replenish'&&e.side===side))changes.push(sideName(side)+'の山札：'+before[side].deck.length+' → '+result.state[side].deck.length+'枚（内容は非公開）');
     if(result.effects?.some(e=>e.type==='mutate'))changes.push('残り山札が変異（枚数を保ち、中身は非公開）');
     if(result.state.choice)changes.push(`${sideName(result.state.choice.side)}が発見の3候補から選択します`);
     if(action.type==='choose'){
