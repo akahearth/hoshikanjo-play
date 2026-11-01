@@ -46,10 +46,11 @@
       const cost = $('deck-cost').value; const type = $('deck-type').value; const trait = $('deck-trait').value;
       const visible = CARDS.filter(card => {
         if(trait==='new'&&card.edition!=='2.9.0')return false;
+        if(['aggro','midrange','control'].includes(trait)&&card.archetype!==trait)return false;
         const text = `${card.name} ${card.description} ${card.tribe} ${card.keywords.map(key => KEYWORDS[key].name).join(' ')}`.toLocaleLowerCase();
         if(trait==='stats'&&!card.effects.some(e=>['buff','setStats','swapStats'].includes(e.type)))return false;
         if(trait==='aoe'&&!card.effects.some(e=>['enemy-units','friendly-units','other-friendly-units','all-units','large-enemies'].includes(e.target)))return false;
-        return (!query || text.includes(query)) && (!type || card.type === type) && (!cost || (cost === '7+' ? card.cost >= 7 : card.cost === Number(cost))) && (!trait || ['stats','aoe','new'].includes(trait) || (trait==='unique'?card.rarity==='unique':trait === 'death' ? card.effects.some(effect => effect.trigger === 'death') : ['discover','transform','mutate'].includes(trait)?card.effects.some(effect=>effect.type===trait||(trait==='transform'&&effect.type==='transformRandom')):card.keywords.includes(trait)));
+        return (!query || text.includes(query)) && (!type || card.type === type) && (!cost || (cost === '7+' ? card.cost >= 7 : card.cost === Number(cost))) && (!trait || ['stats','aoe','new','aggro','midrange','control'].includes(trait) || (trait==='unique'?card.rarity==='unique':trait === 'death' ? card.effects.some(effect => effect.trigger === 'death') : ['discover','transform','mutate'].includes(trait)?card.effects.some(effect=>effect.type===trait||(trait==='transform'&&effect.type==='transformRandom')):card.keywords.includes(trait)));
       }).sort((a, b) => a.cost - b.cost || a.id.localeCompare(b.id));
       $('deck-filter-count').textContent = `${visible.length} / ${CARDS.length} 種類`;
       $('deck-cards').innerHTML = visible.map(card => `<div class="editor-card">${cardMarkup(card, `editor-${card.id}`, 'collection')}<div class="card-quantity"><span>採用 ${count[card.id] || 0} / ${copyLimit(card)}</span><button data-add="${card.id}" aria-label="${card.name}を1枚追加" ${(count[card.id] || 0) >= copyLimit(card) || deck.cards.length >= D.DECK_SIZE ? 'disabled' : ''}>＋ 追加</button></div></div>`).join('');
@@ -110,6 +111,7 @@
       else if (detail) onDetail(detail.dataset.detail || detail.dataset.cardId);
     });
     $('deck-new').addEventListener('click', () => addDeck({ id: D.newDeckId(), name: '星勘定の仕込み帳', heroPower: 'green-rest', cards: [] }));
+    $('deck-template-add').addEventListener('click',()=>{const template=D.CONCEPT_DECKS.find(d=>d.id===$('deck-template').value);if(template){const id=D.newDeckId();addDeck({...D.clone(template),id});if(selectedId===id)tell('見本を追加しました。内容を確認して保存できます。');}});
     $('deck-duplicate').addEventListener('click', () => addDeck({ ...D.clone(current()), id: D.newDeckId(), name: `${current().name.slice(0, 36)}の写し` }));
     $('deck-delete').addEventListener('click', () => {
       if ($('deck-delete').disabled) return;

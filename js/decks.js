@@ -102,6 +102,95 @@
     ]
   }
 ].map(deck=>Object.freeze({...deck,cards:Object.freeze(deck.cards)})));
+  const CONCEPT_DECKS=Object.freeze([
+  {
+    "id": "aggro",
+    "name": "速攻の見本",
+    "heroPower": "ember-call",
+    "cards": [
+      "rush-mouse",
+      "rush-mouse",
+      "rush-scout",
+      "rush-scout",
+      "spark-fox",
+      "spark-fox",
+      "zephyr-hare",
+      "zephyr-hare",
+      "rush-chorus",
+      "rush-chorus",
+      "rush-embers",
+      "rush-embers",
+      "star-bolt",
+      "star-bolt",
+      "ember-wolf",
+      "ember-wolf",
+      "moon-owl",
+      "moon-owl",
+      "cinder-hawk",
+      "cinder-hawk",
+      "ember-lance",
+      "ember-lance"
+    ]
+  },
+  {
+    "id": "midrange",
+    "name": "中盤の見本",
+    "heroPower": "astral-ward",
+    "cards": [
+      "mid-tender",
+      "mid-tender",
+      "mid-guard",
+      "mid-guard",
+      "mid-bloom",
+      "mid-bloom",
+      "mid-supply",
+      "mid-supply",
+      "reed-guard",
+      "reed-guard",
+      "crystal-deer",
+      "crystal-deer",
+      "forge-finder",
+      "forge-finder",
+      "moon-staff",
+      "moon-staff",
+      "insured-scribe",
+      "quote-master",
+      "sprout-president",
+      "gravity-accountant",
+      "cotton-contingency",
+      "ledger-titan"
+    ]
+  },
+  {
+    "id": "control",
+    "name": "長期戦の見本",
+    "heroPower": "astral-ward",
+    "cards": [
+      "control-stone",
+      "control-stone",
+      "control-audit",
+      "control-audit",
+      "control-receipt",
+      "control-receipt",
+      "control-watch",
+      "control-watch",
+      "night-study",
+      "night-study",
+      "forge-finder",
+      "forge-finder",
+      "mist-veil",
+      "mist-veil",
+      "cotton-cocoon",
+      "cotton-cocoon",
+      "insured-scribe",
+      "quote-master",
+      "sprout-president",
+      "gravity-accountant",
+      "cotton-contingency",
+      "ledger-titan"
+    ]
+  }
+].map(deck=>Object.freeze({...deck,cards:Object.freeze(deck.cards)})));
   function validateCards(cards, complete, size) {
     if (!Array.isArray(cards)) return ['デッキのカード一覧が不正です。'];
     const errors = [];
@@ -196,7 +285,7 @@
     if(data.version===1)deck=extendLegacy(deck);
     return { ...deck, name: deck.name.trim(), cards: [...deck.cards] };
   }
-  const api = { DECK_SIZE, MAX_COPIES, MAX_DECKS, STORAGE_KEY, PRESETS, CPU_PRESETS, clone, cardListErrors, deckErrors, libraryErrors, defaultLibrary, loadLibrary, saveLibrary, newDeckId, encodeDeck, decodeDeck };
+  const api = { DECK_SIZE, MAX_COPIES, MAX_DECKS, STORAGE_KEY, PRESETS, CPU_PRESETS, CONCEPT_DECKS, clone, cardListErrors, deckErrors, libraryErrors, defaultLibrary, loadLibrary, saveLibrary, newDeckId, encodeDeck, decodeDeck };
   if (commonJS) module.exports = api;
   else root.SeikanDecks = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
