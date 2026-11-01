@@ -407,7 +407,7 @@
     document.querySelectorAll('dialog[open]').forEach(dialog => dialog.close());
     if(spectator&&watchConfig.mode==='arena')draftWatchDecks();
     currentDeck = spectator?watchConfig.player.deck:arenaMatch ? arenaMatch.player : editor.activeDeck();
-    const cpuDeck = spectator?watchConfig.cpu.deck:arenaMatch ? arenaMatch.cpu : SeikanDecks.PRESETS[Math.floor(Math.random() * SeikanDecks.PRESETS.length)];
+    const cpuDeck = spectator?watchConfig.cpu.deck:arenaMatch ? arenaMatch.cpu : SeikanDecks.CPU_PRESETS[Math.floor(Math.random() * SeikanDecks.CPU_PRESETS.length)];
     if(spectator)matchCpu={...watchConfig.cpu.settings};
     state = createGame(Math.random, { mode: spectator?watchConfig.mode:arenaMatch ? 'arena' : 'constructed', mulligan: true, playerDeck: currentDeck.cards, playerPower: currentDeck.heroPower, playerName: currentDeck.name, cpuDeck: cpuDeck.cards, cpuPower: cpuDeck.heroPower, cpuName: cpuDeck.name });
     archivedRecording=null;
@@ -694,7 +694,7 @@
   function openReview(){if(state.status!=='finished'||busy)return;if($('result-dialog').open)$('result-dialog').close();viewer.open(recording);}
   $('review-button').addEventListener('click',openReview);$('result-review').addEventListener('click',openReview);
   for(const side of ['player','cpu']){
-    $('watch-'+side+'-deck').innerHTML=SeikanDecks.PRESETS.map(deck=>`<option value="${deck.id}">${deck.name}</option>`).join('');
+    $('watch-'+side+'-deck').innerHTML=[...SeikanDecks.PRESETS,...SeikanDecks.CPU_PRESETS].map(deck=>`<option value="${deck.id}">${deck.name}</option>`).join('');
     $('watch-'+side+'-deck').value=SeikanDecks.PRESETS[side==='player'?0:1].id;
   }
   function openWatch(){clearAssist();
@@ -722,7 +722,7 @@
     for(const side of ['player','cpu'])watchConfig[side].deck={cards:[...draft[side].cards],heroPower:BY_HERO[draft[side].hero].power,name:`観戦アリーナ · ${BY_HERO[draft[side].hero].name}`};
   }
   $('watch-start').addEventListener('click',()=>{
-    watchConfig=Object.fromEntries(['player','cpu'].map(side=>[side,{deck:SeikanDecks.PRESETS.find(d=>d.id===$('watch-'+side+'-deck').value)||SeikanDecks.PRESETS[0],settings:normalizeOptions({difficulty:$('watch-'+side+'-difficulty').value,style:$('watch-'+side+'-style').value})}]));
+    watchConfig=Object.fromEntries(['player','cpu'].map(side=>[side,{deck:[...SeikanDecks.PRESETS,...SeikanDecks.CPU_PRESETS].find(d=>d.id===$('watch-'+side+'-deck').value)||SeikanDecks.PRESETS[0],settings:normalizeOptions({difficulty:$('watch-'+side+'-difficulty').value,style:$('watch-'+side+'-style').value})}]));
     watchConfig.mode=$('watch-mode').value==='arena'?'arena':'constructed';
     spectator=true;arenaMatch=null;newGame();
   });

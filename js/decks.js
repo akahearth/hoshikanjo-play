@@ -12,6 +12,96 @@
     { id: 'grove', name: '守りは木から', heroPower: 'astral-ward', cards: expand([['moss-spirit', 2], ['reed-guard', 2], ['stone-tortoise', 2], ['brook-heron', 2], ['jade-protector', 2], ['tool-inspector', 1], ['crystal-deer', 2], ['rune-artisan', 1], ['root-archon', 1], ['dawn-chorus', 2], ['warding-rune', 1], ['quiet-clause', 1], ['verdant-vow', 1], ['night-study', 1], ['spring-song', 1]]) },
     { id: 'cinders', name: '火と押し、もうひと押し', heroPower: 'ember-call', cards: expand([['spark-fox', 2], ['ember-wolf', 2], ['zephyr-hare', 2], ['cinder-hawk', 2], ['thorn-viper', 2], ['mist-stalker', 2], ['moon-owl', 1], ['forge-finder', 1], ['star-bolt', 2], ['ember-lance', 2], ['moon-staff', 1], ['cinder-bloom', 1], ['night-study', 1], ['giant-eviction', 1]]) }
   ].map(deck => Object.freeze({ ...deck, cards: Object.freeze(deck.cards) })));
+  // CPU専用。プレイヤーの初期・保存デッキは従来通り。
+  const CPU_PRESETS=Object.freeze([
+  {
+    "id": "cpu-journey",
+    "name": "星読みの大決算",
+    "heroPower": "green-rest",
+    "cards": [
+      "ledger-titan",
+      "quote-master",
+      "singular-saber",
+      "shoulder-relief",
+      "insured-scribe",
+      "role-reversal",
+      "ancestral-editor",
+      "forge-finder",
+      "moon-staff",
+      "sprout-president",
+      "glass-moth",
+      "gravity-accountant",
+      "shoulder-relief",
+      "forge-finder",
+      "cotton-contingency",
+      "role-reversal",
+      "orbit-cartographer",
+      "skyfire-wyrm",
+      "reaping-scythe",
+      "glass-moth",
+      "rare-fair",
+      "eclipse-serpent"
+    ]
+  },
+  {
+    "id": "cpu-grove",
+    "name": "星護の大決算",
+    "heroPower": "astral-ward",
+    "cards": [
+      "ledger-titan",
+      "quote-master",
+      "singular-saber",
+      "shoulder-relief",
+      "insured-scribe",
+      "role-reversal",
+      "ancestral-editor",
+      "forge-finder",
+      "moon-staff",
+      "sprout-president",
+      "glass-moth",
+      "gravity-accountant",
+      "shoulder-relief",
+      "forge-finder",
+      "cotton-contingency",
+      "role-reversal",
+      "orbit-cartographer",
+      "skyfire-wyrm",
+      "reaping-scythe",
+      "glass-moth",
+      "rare-fair",
+      "eclipse-serpent"
+    ]
+  },
+  {
+    "id": "cpu-cinders",
+    "name": "火急の大決算",
+    "heroPower": "ember-call",
+    "cards": [
+      "ledger-titan",
+      "quote-master",
+      "singular-saber",
+      "shoulder-relief",
+      "insured-scribe",
+      "role-reversal",
+      "mist-stalker",
+      "ancestral-editor",
+      "forge-finder",
+      "moon-staff",
+      "glass-moth",
+      "sprout-president",
+      "gravity-accountant",
+      "shoulder-relief",
+      "forge-finder",
+      "mist-stalker",
+      "ember-runner",
+      "orbit-cartographer",
+      "skyfire-wyrm",
+      "role-reversal",
+      "glass-moth",
+      "reaping-scythe"
+    ]
+  }
+].map(deck=>Object.freeze({...deck,cards:Object.freeze(deck.cards)})));
   function validateCards(cards, complete, size) {
     if (!Array.isArray(cards)) return ['デッキのカード一覧が不正です。'];
     const errors = [];
@@ -106,7 +196,7 @@
     if(data.version===1)deck=extendLegacy(deck);
     return { ...deck, name: deck.name.trim(), cards: [...deck.cards] };
   }
-  const api = { DECK_SIZE, MAX_COPIES, MAX_DECKS, STORAGE_KEY, PRESETS, clone, cardListErrors, deckErrors, libraryErrors, defaultLibrary, loadLibrary, saveLibrary, newDeckId, encodeDeck, decodeDeck };
+  const api = { DECK_SIZE, MAX_COPIES, MAX_DECKS, STORAGE_KEY, PRESETS, CPU_PRESETS, clone, cardListErrors, deckErrors, libraryErrors, defaultLibrary, loadLibrary, saveLibrary, newDeckId, encodeDeck, decodeDeck };
   if (commonJS) module.exports = api;
   else root.SeikanDecks = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
